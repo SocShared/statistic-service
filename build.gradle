@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.2.4.RELEASE'
+    id "io.freefair.lombok" version "5.0.0-rc4"
+}
+test {
+    useJUnitPlatform()
+}
+apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    jcenter()
+}
+
+group 'ml.socshared.bstatistics'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    //API Description Generator
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    // implementation  group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-ribbon', version: '2.2.2.RELEASE'
+    //RestControllers + tomcat
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
+    //Logging
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.2.5.RELEASE'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+}
