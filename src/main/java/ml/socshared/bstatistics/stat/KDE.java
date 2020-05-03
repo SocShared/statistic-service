@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KDE {
-    private double h;
+    private Double h;
     private List<Double> data;
-    public KDE(double h) {
+    public KDE(Double h) {
         this.h = h;
     }
 
@@ -26,7 +26,7 @@ public class KDE {
     public Double predict(Double x) {
         Double res = 0.0;
         for(Double el : data) {
-            res +=  Destributions.normal((x-el)/h, 0.0, 1.0);
+            res +=  Distributions.normal((x-el)/h, 0.0, 1.0);
         }
         return res/(data.size()*h);
     }

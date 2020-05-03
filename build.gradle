@@ -30,8 +30,22 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
     //Logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.2.5.RELEASE'
+    //DataBases
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.hibernate:hibernate-entitymanager'
+    implementation 'com.h2database:h2'
+    //test
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.mockito:mockito-core:3.3.3'
+}
 
+bootJar {
+    baseName = 'ServiceBusinessStatistics'
+    version = '1.0.0-SNAPSHOT'
+}
+
+springBoot {
+    mainClassName = 'ml.socshared.bstatistics.Main'
 }
