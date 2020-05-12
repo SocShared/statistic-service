@@ -17,6 +17,7 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
@@ -42,23 +43,23 @@ public class TargetPostRepositoryTest {
         tp1 = new TargetPost();
         tp1.setGroupId("1");
         tp1.setPostId("p1");
-        tp1.setDateAddingRecord(LocalDate.parse("2020-05-02", dform));
+        tp1.setDateAddingRecord(ZonedDateTime.parse("2020-05-02", dform));
         repository.save(tp1);
         tp2 = new TargetPost();
         tp2.setGroupId("2");
         tp2.setPostId("p2");
-        tp2.setDateAddingRecord(LocalDate.parse("2020-05-01", dform));
+        tp2.setDateAddingRecord(ZonedDateTime.parse("2020-05-01", dform));
         repository.save(tp2);
         tp3 = new TargetPost();
         tp3.setGroupId("3");
         tp3.setPostId("p3");
-        tp3.setDateAddingRecord(LocalDate.parse("2020-04-01", dform));
+        tp3.setDateAddingRecord(ZonedDateTime.parse("2020-04-01", dform));
         repository.save(tp3);
     }
 
     @Test
     public void testRequestFindRecordAddedAfter1() throws ParseException {
-        List<TargetPost> res = repository.findRecordAddedAfter(LocalDate.parse("2020-05-01", dform));
+        List<TargetPost> res = repository.findRecordAddedAfter(ZonedDateTime.parse("2020-05-01", dform));
         Assert.assertEquals(2, res.size());
         Assert.assertTrue(inTargetPost(res, tp1));
         Assert.assertTrue(inTargetPost(res, tp2));

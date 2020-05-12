@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +15,6 @@ import java.util.List;
 public interface TargetPostRepository extends CrudRepository<TargetPost, Integer> {
 
     @Query("SELECT tp FROM TargetPost tp  WHERE tp.dateAddingRecord >= :dateAddingAfter")
-    List<TargetPost> findRecordAddedAfter(@Param("dateAddingAfter") LocalDate dateAdding);
+    List<TargetPost> findRecordAddedAfter(@Param("dateAddingAfter") ZonedDateTime dateAdding);
 
 }

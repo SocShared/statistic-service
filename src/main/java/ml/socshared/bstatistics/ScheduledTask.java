@@ -1,18 +1,18 @@
 package ml.socshared.bstatistics;
 
 
-import jdk.javadoc.internal.doclets.toolkit.util.Group;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.client.ServiceWorkerClient;
 import ml.socshared.bstatistics.domain.db.TargetPost;
-import ml.socshared.bstatistics.repository.GroupInfoRepository;
 import ml.socshared.bstatistics.repository.TargetPostRepository;
+import ml.socshared.bstatistics.service.impl.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component
@@ -35,10 +35,10 @@ public class ScheduledTask {
     public void requestToInitDataCollectionToWorker() {
         log.info("Run scheduled operation: request to initialize operation of collection data of group in Service Worker");
         try {
-            List<TargetPost> tps = repository.findRecordAddedAfter(LocalDate.now().minusDays(trackingNumDays));
+            List<TargetPost> tps = repository.findRecordAddedAfter(Util.timeUtc().minusDays(trackingNumDays));
             client.executeTaskOfCollectionData();
         } catch (Exception exp) {
-            log.warn("Oops! Something went wrong...");
+            log.warn("Oops! Something went wrong..." + exp.getMessage());
         }
 
     }

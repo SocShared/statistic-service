@@ -1,9 +1,11 @@
 package ml.socshared.bstatistics.domain.db;
 
 import lombok.Data;
+import ml.socshared.bstatistics.service.impl.Util;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Data
@@ -14,10 +16,10 @@ public class TargetPost {
     @Column(name = "id")
     @GeneratedValue
     Integer id;
-    @Column(name="group_id")
+    @Column(name="group_id", nullable = false)
     String groupId;
-    @Column(name="post_id")
+    @Column(name="post_id", nullable = false)
     String postId;
-    @Column(name="date_adding_record")
-    LocalDate dateAddingRecord = LocalDate.now();
+    @Column(name="date_adding_record", nullable = false)
+    ZonedDateTime dateAddingRecord = Util.timeUtc();
 }
