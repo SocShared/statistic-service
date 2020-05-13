@@ -5,7 +5,9 @@ import ml.socshared.bstatistics.config.Constants;
 import ml.socshared.bstatistics.config.json.LocalDateTimeSerializer;
 import ml.socshared.bstatistics.domain.db.GroupOnline;
 import ml.socshared.bstatistics.domain.db.PostInfo;
+import ml.socshared.bstatistics.domain.object.DataList;
 import ml.socshared.bstatistics.domain.object.InformationOfPost;
+import ml.socshared.bstatistics.domain.object.PostInfoByTime;
 import ml.socshared.bstatistics.domain.object.TimeSeries;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.exception.HttpNotFoundException;
@@ -53,8 +55,8 @@ public class StatServiceImpl implements StatService {
             throw new HttpNotFoundException("Not found information on group by set period");
         }
 
-        List<Integer> data = applyGroupValuesByDay(giList, GroupOnline::getTimeAddedRecord, GroupOnline::getOnline,
-                                                    Integer::sum, begin, end);
+        List<Integer> data = applyGroupValuesByDay(giList, GroupOnline::getOnline, Integer::sum, ()->0,
+                                                    GroupOnline::getTimeAddedRecord, begin, end);
 
         TimeSeries<Integer> res = new TimeSeries<>();
         res.setData(data);
@@ -62,6 +64,41 @@ public class StatServiceImpl implements StatService {
         res.setBegin(begin);
         res.setEnd(end);
         res.setSize(data.size());
+        return res;
+    }
+
+    /**
+     * Возвращает временные ряды по характеристикам публикаци с одинаковым шагом.
+     * @param groupId - идентификатор группы, которой принадлежит публикация
+     * @param postId - идентификатор публикации
+     * @param begin - начало периода из которого извлекать информацию о публикации
+     * @param end - конец периода из которого извлекать информацию о публикации
+     * @return Объект содержащий времянные ряды с одинаковым шагом
+     */
+    @Override
+    public PostInfoByTime getPostInfoByTime(String groupId, String postId, LocalDate begin, LocalDate end) {
+        Util.checkDate(begin, end);
+        List<PostInfo> pl = postRepository.findPostInfoByPeriod(groupId, postId, Util.toTimeUtc(begin, LocalTime.MIN), Util.toTimeUtc(end, LocalTime.MAX));
+        if(pl.isEmpty()) {
+            throw new HttpNotFoundException("Not information of post (groupId: "
+                    +groupId + "; postId: " + postId + ") by period: " +
+                    begin.toString() + " - " + end.toString());
+        }
+        List<Integer> views = applyGroupValuesByDay(pl, PostInfo::getViews, Integer::sum, ()->0, PostInfo::getDateAddedRecord, begin, end);
+        List<Integer> share = applyGroupValuesByDay(pl, PostInfo::getShare, Integer::sum, ()->0, PostInfo::getDateAddedRecord, begin, end);
+        List<Integer> likes = applyGroupValuesByDay(pl, PostInfo::getLikes, Integer::sum, ()->0, PostInfo::getDateAddedRecord, begin, end);
+        List<Integer> comments = applyGroupValuesByDay(pl, PostInfo::getComments, Integer::sum, ()->0, PostInfo::getDateAddedRecord, begin, end);
+
+        PostInfoByTime res = new PostInfoByTime();
+        Integer size = views.size();
+        res.setGroupId(groupId);
+        res.setPostId(postId);
+        res.setBegin(LocalDateTime.of(begin, LocalTime.MIN));
+        res.setEnd(LocalDateTime.of(end, LocalTime.MAX));
+        res.setVariabilityNumberViews(new DataList<>(size, views));
+        res.setVariabilityNumberShares(new DataList<>(size, share));
+        res.setVariabilityNumberLikes(new DataList<>(size, likes));
+        res.setVariabilityNumberComments(new DataList<>(size, comments));
         return res;
     }
 
@@ -103,20 +140,23 @@ public class StatServiceImpl implements StatService {
 
     }
 
-    public static  List<Integer> applyGroupValuesByDay(List<GroupOnline> timeSeries, Function<GroupOnline,ZonedDateTime> timeGetter,
-                                                Function<GroupOnline, Integer> valueGetter, BinaryOperator<Integer> op, LocalDate begin, LocalDate end) {
+    public static <ValueT, ContainerT>  List<ValueT> applyGroupValuesByDay(
+            List<ContainerT> timeSeries, Function<ContainerT, ValueT> valueGetter, BinaryOperator<ValueT> op,
+            Supplier<ValueT> defaultGetter, Function<ContainerT,ZonedDateTime> timeGetter,
+            LocalDate begin, LocalDate end) {
+
         int numDays = begin.until(end).getDays();
-        List<Integer> data = new LinkedList<Integer>();
+        List<ValueT> data = new LinkedList<>();
         if(numDays == 0) {
             Collections.sort(timeSeries, Comparator.comparing(timeGetter));
-            for(GroupOnline el : timeSeries) {
-                data.add(el.getOnline());
+            for(ContainerT el : timeSeries) {
+                data.add(valueGetter.apply(el));
             }
         } else {
-            HashMap<LocalDate, Integer> sumByDay = new HashMap<>();
-            for(GroupOnline el : timeSeries) {
+            HashMap<LocalDate, ValueT> sumByDay = new HashMap<>();
+            for(ContainerT el : timeSeries) {
                 LocalDate day = LocalDate.from(timeGetter.apply(el));
-                sumByDay.put(day, op.apply(sumByDay.getOrDefault(day, 0), valueGetter.apply(el)));
+                sumByDay.put(day, op.apply(sumByDay.getOrDefault(day, defaultGetter.get()), valueGetter.apply(el)));
             }
             ArrayList<LocalDate> dates = new ArrayList<>(sumByDay.keySet());
             Collections.sort(dates);

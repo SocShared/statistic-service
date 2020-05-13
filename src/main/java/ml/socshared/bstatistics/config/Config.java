@@ -20,11 +20,6 @@ import java.time.ZonedDateTime;
 @EnableJpaRepositories("ml.socshared.bstatistics.repository")
 public class Config{
 
-    ApplicationContext contextApp;
-    @Autowired
-    Config(ApplicationContext app) {
-        contextApp = app;
-    }
     @Bean
     ServiceWorkerClient getServiceWorkerClient() {
         return new ServiceWorkerClientMOCK();

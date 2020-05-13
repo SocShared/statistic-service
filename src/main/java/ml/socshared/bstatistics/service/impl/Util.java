@@ -3,6 +3,7 @@ package ml.socshared.bstatistics.service.impl;
 import ml.socshared.bstatistics.exception.InvalidArgumentException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -33,5 +34,8 @@ public class Util {
 
     public static ZonedDateTime timeUtc() {
         return ZonedDateTime.now(ZoneOffset.UTC);
+    }
+    public static ZonedDateTime toTimeUtc(LocalDate date, LocalTime time) {
+        return ZonedDateTime.of(date, time, ZoneOffset.UTC);
     }
 }
