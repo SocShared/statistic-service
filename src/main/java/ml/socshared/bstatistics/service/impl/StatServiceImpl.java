@@ -2,6 +2,7 @@ package ml.socshared.bstatistics.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.config.Constants;
+import ml.socshared.bstatistics.config.json.LocalDateTimeSerializer;
 import ml.socshared.bstatistics.domain.db.GroupOnline;
 import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.InformationOfPost;
@@ -14,9 +15,12 @@ import ml.socshared.bstatistics.service.StatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -49,37 +53,16 @@ public class StatServiceImpl implements StatService {
             throw new HttpNotFoundException("Not found information on group by set period");
         }
 
-        int numDays = begin.until(end).getDays();
-        TimeSeries<Integer> res = new TimeSeries<>();
-        Duration stepSeconds;
-        List<Integer> data = new LinkedList<Integer>();
-        if(numDays == 0) {
-            Collections.sort(giList, Comparator.comparing(GroupOnline::getTimeAddedRecord));
-            for(GroupOnline el : giList) {
-                data.add(el.getOnline());
-            }
-            stepSeconds = Duration.ofDays(1).dividedBy(Constants.NEWS_NUM_CHECK_PER_DAY);
-        } else {
-            HashMap<LocalDate, Integer> sumOnlineByDay = new HashMap<>();
-            for(GroupOnline el : giList) {
-                LocalDate day = LocalDate.from(el.getTimeAddedRecord());
-                sumOnlineByDay.put(day, sumOnlineByDay.getOrDefault(day, 0) + el.getOnline());
-            }
-            ArrayList<LocalDate> dates = new ArrayList<>(sumOnlineByDay.keySet());
-            Collections.sort(dates);
+        List<Integer> data = applyGroupValuesByDay(giList, GroupOnline::getTimeAddedRecord, GroupOnline::getOnline,
+                                                    Integer::sum, begin, end);
 
-            for(LocalDate d : dates) {
-                data.add(sumOnlineByDay.get(d));
-            }
-            stepSeconds = Duration.ofDays(1);
-        }
+        TimeSeries<Integer> res = new TimeSeries<>();
         res.setData(data);
-        res.setStep(stepSeconds);
+        res.setStep((begin.until(end).getDays() != 0 )? Duration.ofDays(1) : Duration.ofDays(1).dividedBy(Constants.NEWS_NUM_CHECK_PER_DAY));
         res.setBegin(begin);
         res.setEnd(end);
         res.setSize(data.size());
         return res;
-
     }
 
     /**
@@ -118,6 +101,30 @@ public class StatServiceImpl implements StatService {
             }
         }
 
+    }
+
+    public static  List<Integer> applyGroupValuesByDay(List<GroupOnline> timeSeries, Function<GroupOnline,ZonedDateTime> timeGetter,
+                                                Function<GroupOnline, Integer> valueGetter, BinaryOperator<Integer> op, LocalDate begin, LocalDate end) {
+        int numDays = begin.until(end).getDays();
+        List<Integer> data = new LinkedList<Integer>();
+        if(numDays == 0) {
+            Collections.sort(timeSeries, Comparator.comparing(timeGetter));
+            for(GroupOnline el : timeSeries) {
+                data.add(el.getOnline());
+            }
+        } else {
+            HashMap<LocalDate, Integer> sumByDay = new HashMap<>();
+            for(GroupOnline el : timeSeries) {
+                LocalDate day = LocalDate.from(timeGetter.apply(el));
+                sumByDay.put(day, op.apply(sumByDay.getOrDefault(day, 0), valueGetter.apply(el)));
+            }
+            ArrayList<LocalDate> dates = new ArrayList<>(sumByDay.keySet());
+            Collections.sort(dates);
+            for(LocalDate d : dates) {
+                data.add(sumByDay.get(d));
+            }
+        }
+        return data;
     }
 
     private PostInfo information2PostInfo(InformationOfPost info) {
