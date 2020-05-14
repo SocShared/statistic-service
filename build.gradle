@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.2.4.RELEASE'
     id "io.freefair.lombok" version "5.0.0-rc4"
+    id 'jacoco'
 }
 test {
     useJUnitPlatform()
@@ -54,3 +55,17 @@ bootJar {
 springBoot {
     mainClassName = 'ml.socshared.bstatistics.Main'
 }
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
+
+check.dependsOn jacocoTestReport
