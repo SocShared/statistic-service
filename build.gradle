@@ -32,10 +32,12 @@ dependencies {
     //Logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.2.5.RELEASE'
     //DataBases
-
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.hibernate:hibernate-entitymanager'
     implementation 'com.h2database:h2'
+    //table processing
+    compile group: 'tech.tablesaw', name: 'tablesaw-core', version: '0.38.1'
+
     //test
   //  testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile 'org.springframework.boot:spring-boot-starter-test'

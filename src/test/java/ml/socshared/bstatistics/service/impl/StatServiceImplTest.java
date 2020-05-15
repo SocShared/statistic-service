@@ -4,7 +4,9 @@ import ml.socshared.bstatistics.config.Constants;
 import ml.socshared.bstatistics.domain.db.GroupOnline;
 import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.InformationOfPost;
+import ml.socshared.bstatistics.domain.object.PostSummary;
 import ml.socshared.bstatistics.domain.object.TimeSeries;
+import ml.socshared.bstatistics.exception.HttpNotFoundException;
 import ml.socshared.bstatistics.repository.GroupOnlineRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
 import org.junit.jupiter.api.Assertions;
@@ -14,10 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -84,6 +83,18 @@ public class StatServiceImplTest {
 
         Assertions.assertEquals(res.getData(), Arrays.asList(30, 20, 60));
         Assertions.assertEquals(res.getStep(), Duration.ofDays(1));
+    }
+
+    @Test
+    public void getOnlineByTimeTestNotFoundGroup() {
+        Mockito.when(groupInfoRep.findBetweenDates(
+                Mockito.anyString(), Mockito.any(), Mockito.any()
+        ))
+                .thenReturn(Collections.emptyList());
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        Assertions.assertThrows(HttpNotFoundException.class,
+                ()-> service.getOnlineByTime("1", LocalDate.now(), LocalDate.now()));
     }
 
     @Test
@@ -168,4 +179,57 @@ public class StatServiceImplTest {
         Assertions.assertEquals(2, result.getViews());
         Assertions.assertEquals(time3, result.getDateAddedRecord());
     }
+
+
+    @Test
+    public void getPostSummaryFoundData() {
+        List<PostInfo> value = Arrays.asList(
+                new PostInfo(1, "1", "2", ZonedDateTime.now(ZoneOffset.UTC),
+                        20, 5, 12, 3),
+                new PostInfo(2, "1", "2", ZonedDateTime.now(ZoneOffset.UTC),
+                        12, 3, 4, 5),
+                new PostInfo(1, "1", "2", ZonedDateTime.now(ZoneOffset.UTC),
+                        50, 20, 30, 25));
+
+
+        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+            Mockito.eq("1"), Mockito.eq("2")
+    )).thenReturn(value);
+
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        PostSummary res = service.getPostSummary("1", "2");
+
+        Assertions.assertEquals( "1", res.getGroupId());
+        Assertions.assertEquals( "2", res.getPostId());
+        Assertions.assertEquals( 82, res.getNumberViews());
+        Assertions.assertEquals( 28, res.getNumberReposts());
+        Assertions.assertEquals( 46, res.getNumberLikes());
+        Assertions.assertEquals( 33, res.getNumberComments());
+        Assertions.assertEquals(1.3049 , res.getEngagementRate(), 0.0001);
+
+    }
+
+    @Test
+    public void getPostSummaryNotFoundData() {
+        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+                Mockito.anyString(), Mockito.anyString()
+        )).thenReturn(Collections.emptyList());
+
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        Assertions.assertThrows( HttpNotFoundException.class, ()-> service.getPostSummary("1", "2"));
+    }
+
+    @Test
+    public void getPostInfoByTimeTestNotFound() {
+
+        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+                Mockito.anyString(), Mockito.anyString()
+        )).thenReturn(Collections.emptyList());
+
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        Assertions.assertThrows(HttpNotFoundException.class,
+                () ->service.getPostInfoByTime("1", "2", LocalDate.now(), LocalDate.now()));
+    }
+
 }

@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import ml.socshared.bstatistics.domain.object.PostInfoByTime;
-import ml.socshared.bstatistics.domain.object.PostInfoResponse;
+import ml.socshared.bstatistics.domain.object.PostSummary;
 import ml.socshared.bstatistics.domain.object.TimeSeries;
 import ml.socshared.bstatistics.domain.object.InformationOfPost;
 
@@ -31,7 +31,7 @@ public interface BStatisticApi {
             @ApiResponse(code = 200, message = "Seccessfully returned engagement rate"),
             @ApiResponse(code = 404, message = "Not found group or post by id")
             })
-    PostInfoResponse getPostInfo(String groupId, String postId);
+    PostSummary getPostInfo(String groupId, String postId);
 
     //Post - callback for Worker
     @ApiOperation(value = "Callback of Service Worker, on witch return statistic information of group or posts")

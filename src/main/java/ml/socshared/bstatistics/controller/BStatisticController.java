@@ -2,10 +2,12 @@ package ml.socshared.bstatistics.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.api.v1.BStatisticApi;
+import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.PostInfoByTime;
-import ml.socshared.bstatistics.domain.object.PostInfoResponse;
+import ml.socshared.bstatistics.domain.object.PostSummary;
 import ml.socshared.bstatistics.domain.object.TimeSeries;
 import ml.socshared.bstatistics.domain.object.InformationOfPost;
+import ml.socshared.bstatistics.repository.PostInfoRepository;
 import ml.socshared.bstatistics.service.StatService;
 import ml.socshared.bstatistics.service.impl.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,8 @@ import java.util.List;
 public class BStatisticController implements BStatisticApi {
 
     private StatService service;
+    @Autowired
+    private PostInfoRepository rep;
 
     @Autowired
     BStatisticController(StatService s) {
@@ -39,19 +43,24 @@ public class BStatisticController implements BStatisticApi {
     }
 
     @Override
-    @GetMapping("groups/{groupId}/posts/{postId}/info/by_time")
+    @GetMapping("groups/{groupId}/posts/{postId}/time_series")
     public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable String groupId,
                                                          @PathVariable String postId,
                                                          @RequestParam(name="begin") LocalDate begin,
                                                          @RequestParam(name="end") LocalDate end) {
-        return null;
+        log.info("request on get info by time of post (GroupId: " + groupId + "; PostId: " + postId + ")");
+        return service.getPostInfoByTime(groupId, postId, begin, end);
     }
 
     @Override
-    @GetMapping("groups/{groupId}/posts/{postId}/info")
-    public PostInfoResponse getPostInfo(String groupId, String postId) {
-        return null;
+    @GetMapping("groups/{groupId}/posts/{postId}/summary")
+    public PostSummary getPostInfo(@PathVariable String groupId,
+                                   @PathVariable String postId) {
+        log.info("request on get info of post (GroupId: " + groupId + "; PostId: " + postId + ")");
+        return service.getPostSummary(groupId, postId);
     }
+
+    //TODO оотсутствует точка-входа для передачи данных по числу пользователей онлайн в социальной сети
 
     @Override
     @PostMapping("callback")
@@ -63,5 +72,10 @@ public class BStatisticController implements BStatisticApi {
     @GetMapping("time")
     public ZonedDateTime getTime(){
         return Util.timeUtc();
+    }
+
+    @GetMapping("all")
+    public Iterable<PostInfo> getPostInfoAll() {
+        return rep.findAll();
     }
 }

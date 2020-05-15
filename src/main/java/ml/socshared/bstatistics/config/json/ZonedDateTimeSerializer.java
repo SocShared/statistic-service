@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-public class LocalDateTimeSerializer extends StdSerializer<ZonedDateTime> {
+public class ZonedDateTimeSerializer extends StdSerializer<ZonedDateTime> {
 
-    public LocalDateTimeSerializer() {
+    public ZonedDateTimeSerializer() {
         super(ZonedDateTime.class);
     }
 
