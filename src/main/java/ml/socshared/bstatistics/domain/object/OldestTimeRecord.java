@@ -2,9 +2,9 @@ package ml.socshared.bstatistics.domain.object;
 
 import java.time.ZonedDateTime;
 
-public class OldestTimeRecordOfPost {
+public class OldestTimeRecord {
     ZonedDateTime time;
-    public OldestTimeRecordOfPost(ZonedDateTime t) {
+    public OldestTimeRecord(ZonedDateTime t) {
         time = t;
     }
     public ZonedDateTime getTime() {

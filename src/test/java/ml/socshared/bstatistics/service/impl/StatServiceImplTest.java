@@ -1,11 +1,10 @@
 package ml.socshared.bstatistics.service.impl;
 
 import ml.socshared.bstatistics.config.Constants;
-import ml.socshared.bstatistics.domain.db.GroupOnline;
+import ml.socshared.bstatistics.domain.db.GroupInfo;
 import ml.socshared.bstatistics.domain.db.PostInfo;
-import ml.socshared.bstatistics.domain.object.InformationOfPost;
-import ml.socshared.bstatistics.domain.object.PostSummary;
-import ml.socshared.bstatistics.domain.object.TimeSeries;
+import ml.socshared.bstatistics.domain.object.*;
+import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.exception.HttpNotFoundException;
 import ml.socshared.bstatistics.repository.GroupOnlineRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
@@ -26,7 +25,7 @@ public class StatServiceImplTest {
     StatServiceImpl service;
     GroupOnlineRepository groupInfoRep = Mockito.mock(GroupOnlineRepository.class);
     PostInfoRepository postInfoRepository = Mockito.mock(PostInfoRepository.class);
-    List<GroupOnline> gl;
+    List<GroupInfo> gl;
     List<Double> onlineValueOfDay;
     List<Double> onlineValueOfTime19or20;
     List<Double> onlineValueOfTime21;
@@ -34,27 +33,27 @@ public class StatServiceImplTest {
     @BeforeEach
     public void cookData() {
         gl = new ArrayList<>();
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                               .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 19, 0, 0,0,0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 19, 1, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 19, 2, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 20, 0, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 20, 1, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 21, 0, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 21, 1, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 21, 2, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 21, 3, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 21, 4, 0, 0, 0, ZoneOffset.UTC)));
-        gl.add(new GroupOnline().setOnline(10)
+        gl.add(new GroupInfo().setOnline(10)
                 .setTimeAddedRecord(ZonedDateTime.of(2020, 5, 21, 5, 0, 0, 0, ZoneOffset.UTC)));
 
         onlineValueOfDay = Arrays.asList(10.0, 10.0, 10.0);
@@ -67,7 +66,7 @@ public class StatServiceImplTest {
     public void getOnlineByTimeTest() {
         ZonedDateTime begin1 = gl.get(0).getTimeAddedRecord();
         ZonedDateTime end1 = gl.get(gl.size()-1).getTimeAddedRecord();
-        List<GroupOnline> returnOneDay = Arrays.asList(gl.get(0), gl.get(1), gl.get(2));
+        List<GroupInfo> returnOneDay = Arrays.asList(gl.get(0), gl.get(1), gl.get(2));
         Mockito.when(groupInfoRep.findBetweenDates(Mockito.any(), Mockito.eq(LocalDate.from(begin1)),
                 Mockito.eq(LocalDate.from(begin1)))).thenReturn(returnOneDay);
         Mockito.when(groupInfoRep.findBetweenDates(Mockito.any(), Mockito.eq(LocalDate.from(begin1)),
@@ -95,6 +94,79 @@ public class StatServiceImplTest {
 
         Assertions.assertThrows(HttpNotFoundException.class,
                 ()-> service.getOnlineByTime("1", LocalDate.now(), LocalDate.now()));
+    }
+
+    @Test
+    public void getPostInfoByTimeTestByOneDay() {
+
+        List<PostInfo> postInfo = Arrays.asList(
+                new PostInfo(1, "1", "1", ZonedDateTime.now(), 1, 1, 1, 1),
+                new PostInfo(1, "1", "1", ZonedDateTime.now(), 2, 2, 2, 2),
+                new PostInfo(1, "1", "1", ZonedDateTime.now(), 3, 3, 3, 3)
+        );
+
+        Mockito.when(postInfoRepository.findPostInfoByPeriod(
+                Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any()
+        ))
+                .thenReturn(postInfo);
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        PostInfoByTime info = service.getPostInfoByTime("1", "1", LocalDate.now(), LocalDate.now());
+
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberViews().getSize());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberViews().getData().size());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberShares().getSize());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberShares().getData().size());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberLikes().getSize());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberLikes().getData().size());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberComments().getSize());
+        Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberComments().getData().size());
+
+        for(int i = 0; i < postInfo.size(); i++) {
+            Assertions.assertEquals(postInfo.get(i).getViews(), info.getVariabilityNumberViews().getData().get(i));
+            Assertions.assertEquals(postInfo.get(i).getShare(), info.getVariabilityNumberShares().getData().get(i));
+            Assertions.assertEquals(postInfo.get(i).getLikes(), info.getVariabilityNumberLikes().getData().get(i));
+            Assertions.assertEquals(postInfo.get(i).getComments(), info.getVariabilityNumberComments().getData().get(i));
+        }
+    }
+
+    @Test
+    public void getPostInfoByTimeTestByFewDay() {
+
+        List<PostInfo> postInfo = Arrays.asList(
+                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(2), 1, 2, 3, 4),
+                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(2), 2, 2, 2, 2),
+                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(2), 3, 3, 3, 3),
+                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(1), 1, 2, 3, 4),
+                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(1), 2, 2, 2, 2),
+                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(1), 3, 3, 3, 3),
+                new PostInfo(1, "1", "1", ZonedDateTime.now(), 1, 2, 3, 4),
+                new PostInfo(1, "1", "1", ZonedDateTime.now(), 2, 2, 2, 2),
+                new PostInfo(1, "1", "1", ZonedDateTime.now(), 3, 3, 3, 3)
+        );
+
+        Mockito.when(postInfoRepository.findPostInfoByPeriod(
+                Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any()
+        ))
+                .thenReturn(postInfo);
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        PostInfoByTime info = service.getPostInfoByTime("1", "1", LocalDate.now().minusDays(2), LocalDate.now());
+
+        Assertions.assertEquals(3, info.getVariabilityNumberViews().getSize());
+        Assertions.assertEquals(3, info.getVariabilityNumberViews().getData().size());
+        Assertions.assertEquals(3, info.getVariabilityNumberShares().getSize());
+        Assertions.assertEquals(3, info.getVariabilityNumberShares().getData().size());
+        Assertions.assertEquals(3, info.getVariabilityNumberLikes().getSize());
+        Assertions.assertEquals(3, info.getVariabilityNumberLikes().getData().size());
+        Assertions.assertEquals(3, info.getVariabilityNumberComments().getSize());
+        Assertions.assertEquals(3, info.getVariabilityNumberComments().getData().size());
+
+        for(int i = 0; i < 3; i++) {
+            Assertions.assertEquals(6, info.getVariabilityNumberViews().getData().get(i));
+            Assertions.assertEquals(7, info.getVariabilityNumberShares().getData().get(i));
+            Assertions.assertEquals(8, info.getVariabilityNumberLikes().getData().get(i));
+            Assertions.assertEquals(9, info.getVariabilityNumberComments().getData().get(i));
+        }
+
     }
 
     @Test
@@ -230,6 +302,92 @@ public class StatServiceImplTest {
         service = new StatServiceImpl(groupInfoRep, postInfoRepository);
         Assertions.assertThrows(HttpNotFoundException.class,
                 () ->service.getPostInfoByTime("1", "2", LocalDate.now(), LocalDate.now()));
+    }
+
+
+    @Test
+    public void updateInformationOfGroupTestDbDontContainInfo() {
+        Mockito.when(groupInfoRep.getOldestTimeOfRecord(
+                Mockito.anyString()
+        ))
+                .thenReturn(Optional.empty());
+        ArgumentCaptor<GroupInfo> args = ArgumentCaptor.forClass(GroupInfo.class);
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        List<InformationOfGroup> data = Arrays.asList(
+                new InformationOfGroup("1", 100, 150, LocalDateTime.now()),
+                new InformationOfGroup("2", 95, 150, LocalDateTime.now()),
+                new InformationOfGroup("3", 450, 500, LocalDateTime.now())
+        );
+
+
+        service.updateInformationOfGroup(data);
+        Mockito.verify(groupInfoRep, times(3)).save(args.capture());
+        List<GroupInfo> res = args.getAllValues();
+
+        Assertions.assertEquals(3, res.size());
+        Assertions.assertEquals(100, res.get(0).getOnline());
+        Assertions.assertEquals(150, res.get(0).getSubscribers());
+        Assertions.assertEquals(95, res.get(1).getOnline());
+        Assertions.assertEquals(150, res.get(1).getSubscribers());
+        Assertions.assertEquals(450, res.get(2).getOnline());
+        Assertions.assertEquals(500, res.get(2).getSubscribers());
+    }
+
+    @Test
+    public void updateInformationOfGroupTestDbContainInfo() {
+
+        Mockito.when(groupInfoRep.getNumberSubscribers(
+                Mockito.eq("1")
+        )).thenReturn(Optional.of(500L));
+        Mockito.when(groupInfoRep.getNumberSubscribers(
+                Mockito.eq("2")
+        )).thenReturn(Optional.of(100L));
+        Mockito.when(groupInfoRep.getNumberSubscribers(
+                Mockito.eq("3")
+        )).thenReturn(Optional.of(150L));
+
+        Mockito.when(groupInfoRep.getOldestTimeOfRecord(
+                Mockito.anyString()
+        ))
+                .thenReturn(Optional.of(new OldestTimeRecord(ZonedDateTime.now().minusMinutes(15))));
+        ArgumentCaptor<GroupInfo> args = ArgumentCaptor.forClass(GroupInfo.class);
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        List<InformationOfGroup> data = Arrays.asList(
+                new InformationOfGroup("1", 100, 560, LocalDateTime.now()),
+                new InformationOfGroup("2", 100, 100, LocalDateTime.now()),
+                new InformationOfGroup("3", 100, 200, LocalDateTime.now())
+        );
+
+
+        service.updateInformationOfGroup(data);
+        Mockito.verify(groupInfoRep, times(3)).save(args.capture());
+        List<GroupInfo> res = args.getAllValues();
+
+        Assertions.assertEquals(3, res.size());
+        Assertions.assertEquals(100, res.get(0).getOnline());
+        Assertions.assertEquals(60, res.get(0).getSubscribers());
+        Assertions.assertEquals(100, res.get(1).getOnline());
+        Assertions.assertEquals(0, res.get(1).getSubscribers());
+        Assertions.assertEquals(100, res.get(2).getOnline());
+        Assertions.assertEquals(50, res.get(2).getSubscribers());
+    }
+
+    @Test
+    public void updateInformationOfGroupTestSetOldestRecord() {
+        Mockito.when(groupInfoRep.getOldestTimeOfRecord(
+                Mockito.any()
+        ))
+                .thenReturn(Optional.of(new OldestTimeRecord(ZonedDateTime.now().minusMinutes(15))));
+
+        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        Assertions.assertThrows(HttpIllegalBodyRequest.class,
+                () -> service.updateInformationOfGroup(Arrays.asList(
+                        new InformationOfGroup("1", 100, 100, LocalDateTime.now()),
+                        new InformationOfGroup("1", 100, 100, LocalDateTime.now().minusMinutes(30))
+                )));
     }
 
 }

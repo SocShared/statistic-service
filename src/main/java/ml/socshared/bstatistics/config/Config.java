@@ -7,7 +7,6 @@ import ml.socshared.bstatistics.client.ServiceWorkerClient;
 import ml.socshared.bstatistics.client.impl.ServiceWorkerClientMOCK;
 import ml.socshared.bstatistics.config.json.ZonedDateTimeDeserializer;
 import ml.socshared.bstatistics.config.json.ZonedDateTimeSerializer;
-import ml.socshared.bstatistics.stat.KDE;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -23,10 +22,6 @@ public class Config{
         return new ServiceWorkerClientMOCK();
     }
 
-    @Bean
-    KDE getKdeEstimator() {
-        return new KDE(Constants.STAT_KDE_H);
-    }
     @Bean
     Integer getConstKdeEstimateSize() {
         return Constants.STAT_KDE_ESTIMATE_SIZE;

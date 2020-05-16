@@ -1,6 +1,8 @@
 package ml.socshared.bstatistics.domain.db;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import ml.socshared.bstatistics.service.impl.Util;
 import org.hibernate.annotations.Generated;
@@ -14,7 +16,10 @@ import java.time.ZonedDateTime;
 @Table(name = "group_online")
 @Data
 @Accessors(chain = true)
-public class GroupOnline {
+@AllArgsConstructor
+@NoArgsConstructor
+public class GroupInfo {
+
     @Id
     @GeneratedValue
     Integer id;
@@ -25,5 +30,5 @@ public class GroupOnline {
     @Column(nullable =  false)
     Integer online;
     @Column(nullable = false)
-    Integer subscribers;
+    Long subscribers;
 }

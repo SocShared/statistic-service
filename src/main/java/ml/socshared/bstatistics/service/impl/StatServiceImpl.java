@@ -1,9 +1,8 @@
 package ml.socshared.bstatistics.service.impl;
 
-import it.unimi.dsi.fastutil.ints.IntComparator;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.config.Constants;
-import ml.socshared.bstatistics.domain.db.GroupOnline;
+import ml.socshared.bstatistics.domain.db.GroupInfo;
 import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.*;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
@@ -14,16 +13,14 @@ import ml.socshared.bstatistics.service.StatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tech.tablesaw.api.*;
-import tech.tablesaw.columns.AbstractColumnParser;
-import tech.tablesaw.columns.Column;
-import tech.tablesaw.selection.Selection;
 
 import java.time.*;
-import java.time.chrono.ChronoZonedDateTime;
 import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+
 
 @Slf4j
 @Service
@@ -51,12 +48,12 @@ public class StatServiceImpl implements StatService {
     @Override
     public TimeSeries<Integer> getOnlineByTime(String groupId, LocalDate begin, LocalDate end) {
         Util.checkDate(begin, end);
-        List<GroupOnline> giList = groupRepository.findBetweenDates(groupId, begin, end);
+        List<GroupInfo> giList = groupRepository.findBetweenDates(groupId, begin, end);
         if (giList.isEmpty()) {
             throw new HttpNotFoundException("Not found information on group by set period");
         }
-       List<Integer> data = applyGroupValuesByDay(giList, GroupOnline::getOnline, Integer::sum, ()->0,
-                                                  GroupOnline::getTimeAddedRecord, begin, end);
+       List<Integer> data = applyGroupValuesByDay(giList, GroupInfo::getOnline, Integer::sum, ()->0,
+                                                  GroupInfo::getTimeAddedRecord, begin, end);
 
 
         TimeSeries<Integer> res = new TimeSeries<>();
@@ -143,6 +140,20 @@ public class StatServiceImpl implements StatService {
     @Override
     public void updateInformationOfPost(List<InformationOfPost> data) {
        //checking data
+        for(InformationOfPost el : data) {
+            if(el.getViews() < 0) {
+                throw new HttpIllegalBodyRequest("Number of views can't be bellow zero");
+            }
+            if(el.getComments() < 0) {
+                throw new HttpIllegalBodyRequest("Number of comments can't be bellow zero");
+            }
+            if(el.getLikes() < 0 ) {
+                throw new HttpIllegalBodyRequest("Number of likes can't be below zero");
+            }
+            if(el.getShares() < 0) {
+                throw new HttpIllegalBodyRequest("Number of shares can't be below zero");
+            }
+        }
         DateTimeColumn dcol = DateTimeColumn.create("time");
         StringColumn gIdCol = StringColumn.create("groupId");
         StringColumn pIdCol = StringColumn.create("postId");
@@ -173,13 +184,14 @@ public class StatServiceImpl implements StatService {
 
         //check timestamp
         for(InformationOfPost el : data) {
-            Optional<OldestTimeRecordOfPost> time =  postRepository.getTimeOfOldestRecord(
+            Optional<OldestTimeRecord> time =  postRepository.getTimeOfOldestRecord(
                     el.getGroupId(),el.getPostId());
             LocalDateTime timestamp = t.where(gIdCol.isEqualTo(el.getGroupId()).and(pIdCol.isEqualTo(el.getPostId())))
                     .dateTimeColumn("time").min();
             if(time.isPresent() && time.get().getTime().toLocalDateTime().isAfter(timestamp)) {
                 throw new HttpIllegalBodyRequest("Json Array contain time series with time stamp oldest then record in data base. "+
-                        "time_stamp in request: " + timestamp.toString() + "(GroupId: " + el.getGroupId() + "; PostId: " + el.getPostId());
+                        "time_stamp in request: " + timestamp.toString() + "(GroupId: " + el.getGroupId() + "; PostId: " + el.getPostId() +
+                        ") time_stamp in data base: " + time.get().getTime().toString());
             }
         }
 
@@ -202,6 +214,11 @@ public class StatServiceImpl implements StatService {
                     share += pi.getShare();
                     likes += pi.getLikes();
                 }
+                //check changes of data
+                if(views > i.getViews()) {
+                    throw new HttpIllegalBodyRequest("Number of views can't decrease (Was " + views + " became " + i.getViews());
+                }
+
                 PostInfo newPostInfo = new PostInfo();
                 newPostInfo.setViews(i.getViews()-views);
                 newPostInfo.setComments(i.getComments()-commnets);
@@ -210,12 +227,75 @@ public class StatServiceImpl implements StatService {
                 newPostInfo.setDateAddedRecord(i.getTime());
                 newPostInfo.setGroupId(i.getGroupId());
                 newPostInfo.setPostId(i.getPostId());
+
                 postRepository.save(newPostInfo);
             }
         }
 
     }
 
+
+    /**
+     * Запись текущих данных об группе в базу данных. Передается текущее состояние, но в базу
+     * попадет разница текущего состояния с предыдущими отметками. Принимаются только новые данные.
+     * Если передать объект с полем time значение которого меньше самой свежой записи для конкретной группы
+     * то будет выкинуто исключение.
+     * @param data - текущее состояние группы
+     * @throws HttpIllegalBodyRequest если список содержит записи с одинаковым полем time для однной и тойже группы
+     * @throws HttpIllegalBodyRequest если в базе данных содержится более свежая запись чем переданная. Определяется через поле time
+     */
+    @Override
+    public void updateInformationOfGroup(List<InformationOfGroup> data) {
+        //checking data
+        DateTimeColumn dCol = DateTimeColumn.create("time");
+        StringColumn idCol = StringColumn.create("id");
+
+        for(InformationOfGroup el : data) {
+            dCol.append(el.getTime());
+            idCol.append(el.getGroupId());
+        }
+        Table t = Table.create(dCol, idCol);
+        StringColumn unique_ids = idCol.unique();
+        for(String id : unique_ids) {
+            DateTimeColumn dt = t.where(idCol.isEqualTo(id)).dateTimeColumn("time");
+            DateTimeColumn dt_unique = dt.unique();
+            if(dt.size() != dt_unique.size()) {
+                throw new HttpIllegalBodyRequest("Json Array contain some records for Group (GroupId: "+
+                        id + ") with equals time field");
+            }
+        }
+        //check timestamp
+        for(String id : unique_ids) { ;
+            Optional<OldestTimeRecord> time = groupRepository.getOldestTimeOfRecord(id);
+            if (time.isPresent()) {
+                LocalDateTime data_time = t.where(idCol.isEqualTo(id)).dateTimeColumn("time").min();
+                if(time.get().getTime().toLocalDateTime().isAfter(data_time)) {
+                    throw new HttpIllegalBodyRequest("Json Array contain time series with time stamp oldest then record in data base. "+
+                            "time_stamp in request: " + data_time.toString() + "(GroupId: " + id +
+                            ") time_stamp in data base: " + time.get().getTime().toString());
+                }
+            }
+        }
+
+        for(InformationOfGroup el : data) {
+            Optional<Long> subscribers = groupRepository.getNumberSubscribers(el.getGroupId());
+            if(subscribers.isEmpty()) {
+                GroupInfo go = new GroupInfo();
+                go.setGroupId(el.getGroupId());
+                go.setOnline(el.getSubscribersOnline());
+                go.setSubscribers((long) el.getSubscribersNumber());
+                go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
+                groupRepository.save(go);
+            } else {
+                GroupInfo go = new GroupInfo();
+                go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
+                go.setGroupId(el.getGroupId());
+                go.setSubscribers((el.getSubscribersNumber() - subscribers.get()));
+                go.setOnline(el.getSubscribersOnline());
+                groupRepository.save(go);
+            }
+        }
+    }
 
 
     /**
