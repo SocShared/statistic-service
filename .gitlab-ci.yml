@@ -25,7 +25,8 @@ docker-push:
     - sudo docker login -u "$CI_DOCKER_LOGIN" -p "&CI_DOCKER_PASSWORD"
     - sudo docker push $CI_DOCKER_LOGIN/service-business-statistic
 
-docker-deploy:
+docker-deply-swarm:
+  stage: docker-deply-swarm
   script:
     - touch .env_bstat
     - echo "POSTGRES_USER=admin" >> .env_bstat
