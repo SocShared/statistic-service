@@ -27,5 +27,5 @@ public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
             " FROM  PostInfo pi " +
             " GROUP BY pi.groupId, pi.postId " +
             " HAVING pi.groupId = :groupId and pi.postId = :postId")
-    Optional<OldestTimeRecord> getTimeOfOldestRecord(String groupId, String postId);
+    Optional<OldestTimeRecord> getTimeOfYoungestRecord(String groupId, String postId);
 }

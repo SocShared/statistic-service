@@ -19,16 +19,16 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GroupInfo {
-
     @Id
     @GeneratedValue
     Integer id;
-    @Column(name="group_id", nullable = false)
-    String groupId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id", nullable = false)
+    Group group;
     @Column(nullable = false)
     ZonedDateTime timeAddedRecord = Util.timeUtc();
     @Column(nullable =  false)
     Integer online;
     @Column(nullable = false)
-    Long subscribers;
+    Integer subscribers;
 }

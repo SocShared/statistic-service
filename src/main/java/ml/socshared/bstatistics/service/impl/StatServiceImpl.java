@@ -2,16 +2,18 @@ package ml.socshared.bstatistics.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.config.Constants;
-import ml.socshared.bstatistics.domain.db.GroupInfo;
-import ml.socshared.bstatistics.domain.db.PostInfo;
+import ml.socshared.bstatistics.domain.db.*;
 import ml.socshared.bstatistics.domain.object.*;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.exception.HttpNotFoundException;
-import ml.socshared.bstatistics.repository.GroupOnlineRepository;
+import ml.socshared.bstatistics.repository.GroupInfoRepository;
+import ml.socshared.bstatistics.repository.GroupRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
+import ml.socshared.bstatistics.repository.PostRepository;
 import ml.socshared.bstatistics.service.StatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tech.tablesaw.aggregate.AggregateFunctions;
 import tech.tablesaw.api.*;
 
 import java.time.*;
@@ -25,13 +27,19 @@ import java.util.function.Supplier;
 @Slf4j
 @Service
 public class StatServiceImpl implements StatService {
-    private GroupOnlineRepository groupRepository;
-    private PostInfoRepository postRepository;
+
+    private GroupInfoRepository groupInfoRep;
+    private GroupRepository groupRep;
+    private PostInfoRepository postInfoRep;
+    private PostRepository postRep;
 
     @Autowired
-    public StatServiceImpl(GroupOnlineRepository gr, PostInfoRepository pr) {
-        this.groupRepository = gr;
-        this.postRepository = pr;
+    public StatServiceImpl(GroupInfoRepository gir, GroupRepository gr,
+                           PostInfoRepository pir, PostRepository pr) {
+        this.groupInfoRep = gir;
+        this.groupRep = gr;
+        this.postInfoRep = pir;
+        this.postRep = pr;
     }
 
 
@@ -48,7 +56,7 @@ public class StatServiceImpl implements StatService {
     @Override
     public TimeSeries<Integer> getOnlineByTime(String groupId, LocalDate begin, LocalDate end) {
         Util.checkDate(begin, end);
-        List<GroupInfo> giList = groupRepository.findBetweenDates(groupId, begin, end);
+        List<GroupInfo> giList = groupInfoRep.findBetweenDates(groupId, begin, end);
         if (giList.isEmpty()) {
             throw new HttpNotFoundException("Not found information on group by set period");
         }
@@ -76,7 +84,7 @@ public class StatServiceImpl implements StatService {
     @Override
     public PostInfoByTime getPostInfoByTime(String groupId, String postId, LocalDate begin, LocalDate end) {
         Util.checkDate(begin, end);
-        List<PostInfo> pl = postRepository.findPostInfoByPeriod(groupId, postId, Util.toTimeUtc(begin, LocalTime.MIN), Util.toTimeUtc(end, LocalTime.MAX));
+        List<PostInfo> pl = postInfoRep.findPostInfoByPeriod(groupId, postId, Util.toTimeUtc(begin, LocalTime.MIN), Util.toTimeUtc(end, LocalTime.MAX));
         if(pl.isEmpty()) {
             throw new HttpNotFoundException("Not information of post (groupId: "
                     +groupId + "; postId: " + postId + ") by period: " +
@@ -109,29 +117,27 @@ public class StatServiceImpl implements StatService {
      */
     @Override
     public PostSummary getPostSummary(String groupId, String postId) {
-        List<PostInfo> info = postRepository.findPostInfoByGroupIdAndPostId(groupId, postId);
-        if(info.isEmpty()) {
+        Optional<Post> post = postRep.findById(new PostId(groupId, postId));
+        if(post.isEmpty()) {
             throw new HttpNotFoundException("Not found information by post (GroupId: "
                     + groupId + "; PostId: " + postId + ")");
         }
         PostSummary res = new PostSummary();
         res.setGroupId(groupId);
         res.setPostId(postId);
-        for(PostInfo el : info) {
-            res.setNumberComments(res.getNumberComments() + el.getComments());
-            res.setNumberLikes(res.getNumberLikes() + el.getLikes());
-            res.setNumberReposts(res.getNumberReposts() + el.getShare());
-            res.setNumberViews(res.getNumberViews() + el.getViews());
-        }
-        res.setEngagementRate(engagementRate(res.getNumberViews(), res.getNumberReposts(), res.getNumberComments(),
-                                            res.getNumberLikes()));
+        res.setNumberComments(post.get().getComments());
+        res.setNumberLikes(post.get().getLikes());
+        res.setNumberReposts(post.get().getShares());
+        res.setNumberViews(post.get().getViews());
+        res.setEngagementRate(engagementRate(res.getNumberViews(), res.getNumberReposts(),
+                                             res.getNumberComments(), res.getNumberLikes()));
         return res;
     }
 
     /**
-     * Запись текущих данных об посте в базу данных. Передается текущее состояние, но в базу
-     * попадет разница текущего состояния с предыдущими отметками. Принимаются только новые данные.
-     * Если передать объект с полет time значение которого меньше самой свежой записи для конкретного поста
+     * Запись текущих данных об посте в базу данных. Передается текущее состояние, в базу
+     * попадет как переданные данные так и разница текущего состояния с предыдущи. Принимаются только новые данные.
+     * Если передать объект с полем time, значение которого меньше самой свежой записи для конкретного поста
      * то будет выкинуто исключение.
      * @param data - текущее состояние поста
      * @throws HttpIllegalBodyRequest если список содержит записи с одинаковым полем time для одного и тогоже поста
@@ -162,7 +168,7 @@ public class StatServiceImpl implements StatService {
             gIdCol.append(el.getGroupId());
             pIdCol.append(el.getPostId());
         }
-        Set<LocalDateTime> timestamps = new HashSet<>();
+
         Table t = Table.create(dcol, gIdCol, pIdCol);
         StringColumn group_id_unique = gIdCol.unique();
         //process pair (group id, post id)
@@ -184,7 +190,7 @@ public class StatServiceImpl implements StatService {
 
         //check timestamp
         for(InformationOfPost el : data) {
-            Optional<OldestTimeRecord> time =  postRepository.getTimeOfOldestRecord(
+            Optional<OldestTimeRecord> time =  postInfoRep.getTimeOfYoungestRecord(
                     el.getGroupId(),el.getPostId());
             LocalDateTime timestamp = t.where(gIdCol.isEqualTo(el.getGroupId()).and(pIdCol.isEqualTo(el.getPostId())))
                     .dateTimeColumn("time").min();
@@ -196,39 +202,48 @@ public class StatServiceImpl implements StatService {
         }
 
         data.sort(Comparator.comparing(InformationOfPost::getTime));
+        //save before states of post
+        Map<PostId, Post> state = new HashMap<>();
+        for(String groupId : group_id_unique) {
+            StringColumn post_id_unique = t.where(gIdCol.isEqualTo(groupId))
+                                            .stringColumn("postId").unique();
+            for(String postId : post_id_unique) {
+                PostId id = new PostId(groupId, postId);
+                Optional<Post> p = postRep.findById(id);
+                if(p.isPresent()) {
+                    state.put(id, p.get());
+                }
+            }
+        }
+
         //Save data
         for(InformationOfPost i : data) {
-            List<PostInfo> info = postRepository.findPostInfoByGroupIdAndPostId(i.getGroupId(), i.getPostId());
-            if (info.isEmpty()) {
+            PostId id = new PostId(i.getGroupId(), i.getPostId());
+            if (!state.containsKey(id)) {
+                Post post = information2Post(i);
+                postRep.save(post);
                 PostInfo newInfo = information2PostInfo(i);
-                postRepository.save(newInfo);
+                newInfo.setPost(post);
+                postInfoRep.save(newInfo);
+                state.put(post.getId(), post);
            } else {
-                Integer views =0;
-                Integer commnets = 0;
-                Integer  share = 0;
-                Integer likes = 0;
-                Integer subscribers = 0;
-                for(PostInfo pi : info) {
-                    views += pi.getViews();
-                    commnets += pi.getComments();
-                    share += pi.getShare();
-                    likes += pi.getLikes();
-                }
+                Post post_state = state.get(id);
                 //check changes of data
-                if(views > i.getViews()) {
-                    throw new HttpIllegalBodyRequest("Number of views can't decrease (Was " + views + " became " + i.getViews());
+                if(post_state.getViews() > i.getViews()) {
+                    throw new HttpIllegalBodyRequest("Number of views can't decrease (Was " + post_state.getViews() + " became " + i.getViews());
                 }
 
                 PostInfo newPostInfo = new PostInfo();
-                newPostInfo.setViews(i.getViews()-views);
-                newPostInfo.setComments(i.getComments()-commnets);
-                newPostInfo.setShare(i.getShares()-share);
-                newPostInfo.setLikes(i.getLikes()-likes);
+                newPostInfo.setViews(i.getViews()- post_state.getViews());
+                newPostInfo.setComments(i.getComments()- post_state.getComments());
+                newPostInfo.setShare(i.getShares() - post_state.getShares());
+                newPostInfo.setLikes(i.getLikes() - post_state.getLikes());
                 newPostInfo.setDateAddedRecord(i.getTime());
-                newPostInfo.setGroupId(i.getGroupId());
-                newPostInfo.setPostId(i.getPostId());
-
-                postRepository.save(newPostInfo);
+                Post newPostState = information2Post(i);
+                postRep.save(newPostState);
+                newPostInfo.setPost(newPostState);
+                postInfoRep.save(newPostInfo);
+                state.put(newPostState.getId(), newPostState);
             }
         }
 
@@ -249,12 +264,13 @@ public class StatServiceImpl implements StatService {
         //checking data
         DateTimeColumn dCol = DateTimeColumn.create("time");
         StringColumn idCol = StringColumn.create("id");
-
+        IntColumn subCol = IntColumn.create("sub");
         for(InformationOfGroup el : data) {
             dCol.append(el.getTime());
             idCol.append(el.getGroupId());
+            subCol.append(el.getSubscribersNumber());
         }
-        Table t = Table.create(dCol, idCol);
+        Table t = Table.create(dCol, idCol, subCol);
         StringColumn unique_ids = idCol.unique();
         for(String id : unique_ids) {
             DateTimeColumn dt = t.where(idCol.isEqualTo(id)).dateTimeColumn("time");
@@ -266,7 +282,7 @@ public class StatServiceImpl implements StatService {
         }
         //check timestamp
         for(String id : unique_ids) { ;
-            Optional<OldestTimeRecord> time = groupRepository.getOldestTimeOfRecord(id);
+            Optional<OldestTimeRecord> time = groupInfoRep.getOldestTimeOfRecord(id);
             if (time.isPresent()) {
                 LocalDateTime data_time = t.where(idCol.isEqualTo(id)).dateTimeColumn("time").min();
                 if(time.get().getTime().toLocalDateTime().isAfter(data_time)) {
@@ -276,24 +292,42 @@ public class StatServiceImpl implements StatService {
                 }
             }
         }
+        //find  latest record
+        Table latest = t.summarize(dCol, AggregateFunctions.latestDateTime).by(idCol);
 
-        for(InformationOfGroup el : data) {
-            Optional<Long> subscribers = groupRepository.getNumberSubscribers(el.getGroupId());
-            if(subscribers.isEmpty()) {
-                GroupInfo go = new GroupInfo();
-                go.setGroupId(el.getGroupId());
-                go.setOnline(el.getSubscribersOnline());
-                go.setSubscribers((long) el.getSubscribersNumber());
-                go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
-                groupRepository.save(go);
-            } else {
-                GroupInfo go = new GroupInfo();
-                go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
-                go.setGroupId(el.getGroupId());
-                go.setSubscribers((el.getSubscribersNumber() - subscribers.get()));
-                go.setOnline(el.getSubscribersOnline());
-                groupRepository.save(go);
+        Map<String, Group> before_group_value = new HashMap<>();
+        Map<String, Group> new_group_value = new HashMap<>();
+        //update latest value
+        for(Row row : latest) {
+            String id = row.getString("id");
+            Optional<Group> before = groupRep.findById(id);
+            if(before.isPresent()) {
+                before_group_value.put(id, before.get());
             }
+            Group g = new Group();
+            LocalDateTime time = row.getDateTime("Latest Date-Time [time]");
+            g.setGroupId(id);
+            g.setSubscribers(t.where(
+                    idCol.isEqualTo(id).and(dCol.isEqualTo(time))
+            )
+                    .intColumn("sub").get(0));
+            new_group_value.put(g.getGroupId(), g);
+            groupRep.save(g);
+        }
+
+        //TODO change object for complex key
+        for(InformationOfGroup el : data) {
+            GroupInfo go = new GroupInfo();
+            if(before_group_value.containsKey(el.getGroupId())) {
+                Group group = before_group_value.get(el.getGroupId());
+                go.setSubscribers((el.getSubscribersNumber() - group.getSubscribers()));
+            } else {
+                go.setSubscribers(el.getSubscribersNumber());
+            }
+            go.setGroup(new_group_value.get(el.getGroupId()));
+            go.setOnline(el.getSubscribersOnline());
+            go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
+            groupInfoRep.save(go);
         }
     }
 
@@ -312,8 +346,6 @@ public class StatServiceImpl implements StatService {
 
     private PostInfo information2PostInfo(InformationOfPost info) {
         PostInfo newInfo = new PostInfo();
-        newInfo.setGroupId(info.getGroupId());
-        newInfo.setPostId(info.getPostId());
         newInfo.setDateAddedRecord(info.getTime());
         newInfo.setComments(info.getComments());
         newInfo.setViews(info.getViews());
@@ -323,6 +355,15 @@ public class StatServiceImpl implements StatService {
             throw new HttpIllegalBodyRequest("fields cannot be null");
         }
         return newInfo;
+    }
+
+    private Post information2Post(InformationOfPost info) {
+        Post post = new Post();
+        post.setId(new PostId(info.getGroupId(), info.getPostId()));
+        post.setComments(info.getComments());
+        post.setLikes(info.getLikes());
+        post.setShares(info.getShares());
+        post.setViews(info.getViews());
     }
 
     private static <ValueT, ContainerT>  List<ValueT> applyGroupValuesByDay(

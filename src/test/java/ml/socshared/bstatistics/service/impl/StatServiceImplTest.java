@@ -6,7 +6,7 @@ import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.*;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.exception.HttpNotFoundException;
-import ml.socshared.bstatistics.repository.GroupOnlineRepository;
+import ml.socshared.bstatistics.repository.GroupInfoRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.times;
 public class StatServiceImplTest {
 
     StatServiceImpl service;
-    GroupOnlineRepository groupInfoRep = Mockito.mock(GroupOnlineRepository.class);
+    GroupInfoRepository groupInfoRep = Mockito.mock(GroupInfoRepository.class);
     PostInfoRepository postInfoRepository = Mockito.mock(PostInfoRepository.class);
     List<GroupInfo> gl;
     List<Double> onlineValueOfDay;

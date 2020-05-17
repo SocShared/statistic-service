@@ -24,10 +24,9 @@ public class PostInfo {
     @GeneratedValue
     @Column(name="id")
     Integer id;
-    @Column(name="group_id", nullable = false)
-    String groupId;
-    @Column(name="post_id", nullable = false)
-    String postId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="post_id")
+    Post post;
     @Column(name="date_added_record", nullable = false)
     ZonedDateTime dateAddedRecord;
     Integer views;
