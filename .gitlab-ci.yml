@@ -1,4 +1,4 @@
-image: java:14
+image: java:11
 
 stages:
   - build
@@ -11,7 +11,7 @@ before_script:
 
 build:
   stage: build
-  script: ./gradlew clean build
+  script: gradle clean build
   artifacts:
     paths:
       - build/libs/service-business-statistic-1.0.0-SNAPSHOT.jar
