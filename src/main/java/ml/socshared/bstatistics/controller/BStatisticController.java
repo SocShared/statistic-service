@@ -8,10 +8,10 @@ import ml.socshared.bstatistics.repository.PostInfoRepository;
 import ml.socshared.bstatistics.service.StatService;
 import ml.socshared.bstatistics.service.impl.Util;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 
 @RestController
@@ -33,19 +33,21 @@ public class BStatisticController implements BStatisticApi {
     @Override
     @GetMapping("groups/{groupId}/online")
     public TimeSeries<Integer> getGroupOnline(@PathVariable String groupId,
-                                              @RequestParam(name="begin") LocalDate begin,
-                                              @RequestParam(name="end") LocalDate end) {
+                                              @RequestParam(name="begin") Long begin,
+                                              @RequestParam(name="end") Long end) {
         log.info("Get online of group");
-        return service.getOnlineByTime(groupId, begin, end);
+        return service.getOnlineByTime(groupId,
+                LocalDate.from(Instant.ofEpochSecond( begin)), LocalDate.from(Instant.ofEpochSecond(end)));
     }
 
     @Override
     @GetMapping("groups/{groupId}/subscribers/variability")
     public TimeSeries<Integer> getVariabilitySubscribersOfGroup(@PathVariable String groupId,
-                                                                @RequestParam LocalDate begin,
-                                                                @RequestParam LocalDate end) {
+                                                                @RequestParam Long begin,
+                                                                @RequestParam Long end) {
         log.info("get time series of group (GroupID: " + groupId +") subscribers");
-       // return service.getVariabilitySubscribers(groupId, begin, end);
+        //return service.getVariabilitySubscribers(groupId, LocalDate.from(Instant.ofEpochSecond( begin)),
+        // LocalDate.from(Instant.ofEpochSecond( end)));
         return null;
     }
 
@@ -60,10 +62,11 @@ public class BStatisticController implements BStatisticApi {
     @GetMapping("groups/{groupId}/posts/{postId}/time_series")
     public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable String groupId,
                                                          @PathVariable String postId,
-                                                         @RequestParam(name="begin") LocalDate begin,
-                                                         @RequestParam(name="end") LocalDate end) {
+                                                         @RequestParam(name="begin") Long begin,
+                                                         @RequestParam(name="end") Long end) {
         log.info("request on get info by time of post (GroupId: " + groupId + "; PostId: " + postId + ")");
-        return service.getPostInfoByTime(groupId, postId, begin, end);
+        return service.getPostInfoByTime(groupId, postId, LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
+                LocalDate.ofInstant(Instant.ofEpochSecond( end), ZoneOffset.UTC));
     }
 
     @Override
@@ -91,8 +94,8 @@ public class BStatisticController implements BStatisticApi {
     }
 
     @GetMapping("time")
-    public ZonedDateTime getTime(){
-        return Util.timeUtc();
+    public LocalDate getTime(){
+        return LocalDate.now();
     }
 
     @GetMapping("all")

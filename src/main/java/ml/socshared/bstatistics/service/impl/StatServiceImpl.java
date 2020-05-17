@@ -163,20 +163,23 @@ public class StatServiceImpl implements StatService {
         DateTimeColumn dcol = DateTimeColumn.create("time");
         StringColumn gIdCol = StringColumn.create("groupId");
         StringColumn pIdCol = StringColumn.create("postId");
+        IntColumn viewsCol = IntColumn.create("views");
         for(InformationOfPost el : data) {
             dcol.append(LocalDateTime.from(el.getTime()));
             gIdCol.append(el.getGroupId());
             pIdCol.append(el.getPostId());
+            viewsCol.append(el.getViews());
         }
 
-        Table t = Table.create(dcol, gIdCol, pIdCol);
+        Table t = Table.create(dcol, gIdCol, pIdCol, viewsCol);
         StringColumn group_id_unique = gIdCol.unique();
         //process pair (group id, post id)
         for(String gid : group_id_unique) {
             Table oneGroupRecords = t.where(gIdCol.isEqualTo(gid));
             StringColumn unique_post_id_for_group = oneGroupRecords.stringColumn("postId").unique();
             for(String pid : unique_post_id_for_group) {
-                DateTimeColumn timestamps_for_different_records_of_one_post = oneGroupRecords.where(pIdCol.isEqualTo(pid)).dateTimeColumn("time");
+                Table data_for_one_post = oneGroupRecords.where(pIdCol.isEqualTo(pid));
+                DateTimeColumn timestamps_for_different_records_of_one_post = data_for_one_post.dateTimeColumn("time");
                 int all_size = timestamps_for_different_records_of_one_post.size();
                 DateTimeColumn timestamps_unique = timestamps_for_different_records_of_one_post.unique();
                 int unique_size = timestamps_unique.size();
@@ -185,6 +188,15 @@ public class StatServiceImpl implements StatService {
                     throw new HttpIllegalBodyRequest("Json Array contain some records for post (GroupId: "+
                             gid + "; PostId: "+ pid +") with equals time field");
                 }
+                data_for_one_post = data_for_one_post.sortAscendingOn("time");
+                int tmp = data_for_one_post.row(0).getInt("views");
+                for(int i = 1; i < data_for_one_post.rowCount(); i++ ) {
+                    int v = data_for_one_post.row(i).getInt("views");
+                    if(v < tmp) {
+                        throw new HttpIllegalBodyRequest("Number of views can't decrease (Was " + tmp + " became " + v+")");
+                    }
+                }
+
             }
         }
 
@@ -201,7 +213,11 @@ public class StatServiceImpl implements StatService {
             }
         }
 
+        //checking that list don't containing conflicting data of one post by field 'views'
+
+
         data.sort(Comparator.comparing(InformationOfPost::getTime));
+
         //save before states of post
         Map<PostId, Post> state = new HashMap<>();
         for(String groupId : group_id_unique) {
@@ -221,7 +237,7 @@ public class StatServiceImpl implements StatService {
             PostId id = new PostId(i.getGroupId(), i.getPostId());
             if (!state.containsKey(id)) {
                 Post post = information2Post(i);
-                postRep.save(post);
+                post = postRep.save(post);
                 PostInfo newInfo = information2PostInfo(i);
                 newInfo.setPost(post);
                 postInfoRep.save(newInfo);
@@ -240,7 +256,7 @@ public class StatServiceImpl implements StatService {
                 newPostInfo.setLikes(i.getLikes() - post_state.getLikes());
                 newPostInfo.setDateAddedRecord(i.getTime());
                 Post newPostState = information2Post(i);
-                postRep.save(newPostState);
+                newPostState =  postRep.save(newPostState);
                 newPostInfo.setPost(newPostState);
                 postInfoRep.save(newPostInfo);
                 state.put(newPostState.getId(), newPostState);
@@ -314,7 +330,7 @@ public class StatServiceImpl implements StatService {
                 group.setGroupId(el.getGroupId());
             }
             group.setSubscribers(el.getSubscribersNumber());
-            groupRep.save(group);
+            group = groupRep.save(group);
 
             go.setGroup(group);
             go.setOnline(el.getSubscribersOnline());

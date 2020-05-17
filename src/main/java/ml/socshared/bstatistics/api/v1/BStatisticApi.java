@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiResponses;
 import ml.socshared.bstatistics.domain.object.*;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,9 +16,9 @@ public interface BStatisticApi {
             @ApiResponse(code = 200, message = "Successfully retrieved Time Series"),
             @ApiResponse(code = 404, message = "Not found information by group")
     })
-    TimeSeries<Integer> getGroupOnline(String groupId, LocalDate begin, LocalDate end);
+    TimeSeries<Integer> getGroupOnline(String groupId, Long begin, Long end);
 
-    TimeSeries<Integer> getVariabilitySubscribersOfGroup(String groupId, LocalDate begin, LocalDate end);
+    TimeSeries<Integer> getVariabilitySubscribersOfGroup(String groupId, Long begin, Long end);
     Integer getNumberSubscribersOfGroup(String groupId);
 
     @ApiOperation(value = "Return Time Series  number of comments, reposts, likes", response = TimeSeries.class)
@@ -25,7 +26,7 @@ public interface BStatisticApi {
             @ApiResponse(code = 200, message = "Successfully retrieved Time Series"),
             @ApiResponse(code = 404, message = "Not found information by group or post")
     })
-    PostInfoByTime getInfoVariabilityByTimeOfPost(String groupId, String postId, LocalDate begin, LocalDate end);
+    PostInfoByTime getInfoVariabilityByTimeOfPost(String groupId, String postId, Long begin, Long end);
 
     @ApiOperation(value = "Value Engagement rate by pos of group")
     @ApiResponses(value = {
