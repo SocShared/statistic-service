@@ -1,3 +1,5 @@
+image: java:14
+
 stages:
   - build
   - docker-build
