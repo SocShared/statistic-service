@@ -19,13 +19,13 @@ build:
 docker-build:
   stage: docker-build
   script:
-    - sudo docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
+    - docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
 
 docker-push:
   stage: docker-push
   script:
-    - sudo docker login -u "$CI_DOCKER_LOGIN" -p "&CI_DOCKER_PASSWORD"
-    - sudo docker push $CI_DOCKER_LOGIN/service-business-statistic
+    - docker login -u "$CI_DOCKER_LOGIN" -p "&CI_DOCKER_PASSWORD"
+    - docker push $CI_DOCKER_LOGIN/service-business-statistic
 
 docker-deply-swarm:
   stage: docker-deply-swarm
@@ -35,7 +35,7 @@ docker-deply-swarm:
     - echo "POSTGRES_PASS=admin" >> .env_bstat
     - echo "POSTGRES_DB=$POSTGRES_DB" >> .env_bstat
     - echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env_bstat
-    - sudo docker stack deploy -c docker-compose.yaml socshared
+    - docker stack deploy -c docker-compose.yaml socshared
 
 
 
