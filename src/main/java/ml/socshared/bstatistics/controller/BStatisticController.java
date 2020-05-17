@@ -2,6 +2,7 @@ package ml.socshared.bstatistics.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.api.v1.BStatisticApi;
+import ml.socshared.bstatistics.domain.db.Group;
 import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.*;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
@@ -31,7 +32,7 @@ public class BStatisticController implements BStatisticApi {
 
 
     @Override
-    @GetMapping("groups/{groupId}/online")
+    @GetMapping("groups/{groupId}/online/time_series")
     public TimeSeries<Integer> getGroupOnline(@PathVariable String groupId,
                                               @RequestParam(name="begin") Long begin,
                                               @RequestParam(name="end") Long end) {
@@ -53,9 +54,9 @@ public class BStatisticController implements BStatisticApi {
 
     @Override
     @GetMapping("groups/{groupId}/subscribers")
-    public Integer getNumberSubscribersOfGroup(@PathVariable  String groupId) {
-       // return service.getNumberSubscribersOfGroup(groupId);
-        return null;
+    public Group getNumberSubscribersOfGroup(@PathVariable  String groupId) {
+       log.info("request on get short information of group by id: " + groupId);
+        return service.getGroupSubscribers(groupId);
     }
 
     @Override

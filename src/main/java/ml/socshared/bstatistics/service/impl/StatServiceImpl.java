@@ -13,7 +13,6 @@ import ml.socshared.bstatistics.repository.PostRepository;
 import ml.socshared.bstatistics.service.StatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tech.tablesaw.aggregate.AggregateFunctions;
 import tech.tablesaw.api.*;
 
 import java.time.*;
@@ -133,6 +132,8 @@ public class StatServiceImpl implements StatService {
                                              res.getNumberComments(), res.getNumberLikes()));
         return res;
     }
+
+
 
     /**
      * Запись текущих данных об посте в базу данных. Передается текущее состояние, в базу
@@ -400,6 +401,15 @@ public class StatServiceImpl implements StatService {
             }
         }
         return data;
+    }
+
+    @Override
+    public Group getGroupSubscribers(String groupId) {
+        Optional<Group> g = groupRep.findById(groupId);
+        if(g.isEmpty()) {
+            throw new HttpNotFoundException("Information about group (id: " + groupId + ") not found");
+        }
+        return g.get();
     }
 
 }

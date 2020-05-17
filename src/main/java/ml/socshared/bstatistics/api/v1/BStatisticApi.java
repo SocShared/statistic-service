@@ -3,6 +3,7 @@ package ml.socshared.bstatistics.api.v1;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import ml.socshared.bstatistics.domain.db.Group;
 import ml.socshared.bstatistics.domain.object.*;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -19,7 +20,7 @@ public interface BStatisticApi {
     TimeSeries<Integer> getGroupOnline(String groupId, Long begin, Long end);
 
     TimeSeries<Integer> getVariabilitySubscribersOfGroup(String groupId, Long begin, Long end);
-    Integer getNumberSubscribersOfGroup(String groupId);
+    Group getNumberSubscribersOfGroup(String groupId);
 
     @ApiOperation(value = "Return Time Series  number of comments, reposts, likes", response = TimeSeries.class)
     @ApiResponses(value = {
