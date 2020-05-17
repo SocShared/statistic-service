@@ -1,14 +1,19 @@
 package ml.socshared.bstatistics.domain.object;
 
+import jdk.vm.ci.meta.Local;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.Date;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDate;
 
-@Data
-public class TimeSeries {
-    SeriesType type;
-    Date begin;
-    Date end;
-    List<Double> data;
+@NoArgsConstructor
+@Getter
+@Setter
+public class TimeSeries<T> extends DataList<T> {
+    LocalDate begin;
+    LocalDate end;
+    Duration step;
 }

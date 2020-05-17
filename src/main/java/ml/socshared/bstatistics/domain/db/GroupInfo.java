@@ -1,22 +1,34 @@
 package ml.socshared.bstatistics.domain.db;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+import ml.socshared.bstatistics.service.impl.Util;
+import org.hibernate.annotations.Generated;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import java.util.Date;
+import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 @Entity
-@Table(name = "group info")
+@Table(name = "group_online")
 @Data
+@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class GroupInfo {
+    @Id
+    @GeneratedValue
     Integer id;
-    String group_id;
-    Date timestamp;
+    @ManyToOne(fetch = FetchType.LAZY,  cascade = CascadeType.ALL)
+    @JoinColumn(name = "group_id", nullable = false)
+    Group group;
+    @Column(nullable = false)
+    ZonedDateTime timeAddedRecord = Util.timeUtc();
+    @Column(nullable =  false)
     Integer online;
-    Integer views;
-    Integer share;
-    Integer likes;
-    Integer comments;
+    @Column(nullable = false)
     Integer subscribers;
 }

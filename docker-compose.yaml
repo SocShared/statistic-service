@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+  bstat:
+    image: lexgv/bstat
+    ports:
+      - 8884:8884
+    env_file:
+      - .env_bstat
+
+networks:
+  default:
+    name: socshared

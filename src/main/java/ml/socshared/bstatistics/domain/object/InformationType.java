@@ -1,6 +1,6 @@
 package ml.socshared.bstatistics.domain.object;
 
-public enum SeriesType {
+public enum InformationType {
     ONLINE,
     LIKES,
     VIEWS,

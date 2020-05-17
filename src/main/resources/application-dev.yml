@@ -1,0 +1,20 @@
+server:
+  port: 8884
+
+spring:
+  datasource:
+    url:  jdbc:postgresql://${POSTGRES_HOST:localhost}/${POSTGRES_DB:bstat}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASS}
+jpa:
+  hibernate:
+    hbm2ddl:
+      auto: create
+
+service:
+  stat:
+    kde-h: 0.3337
+    kde_estimate_size: 200
+  news:
+    tracking_num_days: 3
+    number_of_checks_per_day: 50

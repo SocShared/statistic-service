@@ -1,26 +1,19 @@
 package ml.socshared.bstatistics.service;
 
-import ml.socshared.bstatistics.domain.object.TimeSeries;
-import ml.socshared.bstatistics.repository.GroupInfoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import ml.socshared.bstatistics.domain.db.Group;
+import ml.socshared.bstatistics.domain.db.GroupInfo;
+import ml.socshared.bstatistics.domain.db.PostInfo;
+import ml.socshared.bstatistics.domain.object.*;
 
-import javax.xml.crypto.Data;
+import java.time.LocalDate;
+import java.util.List;
 
-@Service
+
 public interface StatService {
-
-    TimeSeries estimateOnlineOfHour(String groupId, Data begin);
-    TimeSeries estimateOnlineOfDay(String groupId, Data begin, Data end);
-    TimeSeries estimateOnlineOfWeek(String groupId, Data begin, Data end);
-
-    TimeSeries estimatePostShareOfHour(String groupId, String postId, Data begin, Data end);
-
-    TimeSeries estimatePostLikesOfHour(String groupId, String postId);
-    TimeSeries estimatePostLikesOfDay(String groupId, String postId);
-    TimeSeries estimatePostLikes(String groupId, String postId, Data begin, Data end);
-
-    TimeSeries estimatePostViews(String groupId, String postId, Data begin, Data end);
-    TimeSeries estimatePostComments(String groupId, String postId, Data begin, Data end);
-
+    TimeSeries<Integer> getOnlineByTime(String groupId, LocalDate begin, LocalDate end);
+    PostInfoByTime getPostInfoByTime(String groupId, String postId, LocalDate begin, LocalDate end);
+    PostSummary getPostSummary(String groupId, String postId);
+    Group getGroupSubscribers(String groupId);
+    void updateInformationOfPost(List<InformationOfPost> data);
+    void updateInformationOfGroup(List<InformationOfGroup> data);
 }

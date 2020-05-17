@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.2.4.RELEASE'
     id "io.freefair.lombok" version "5.0.0-rc4"
+    id 'jacoco'
 }
 test {
     useJUnitPlatform()
@@ -28,10 +29,49 @@ dependencies {
     // implementation  group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-ribbon', version: '2.2.2.RELEASE'
     //RestControllers + tomcat
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
+    
     //Logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.2.5.RELEASE'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    //DataBases
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.hibernate:hibernate-entitymanager'
+    implementation 'com.h2database:h2'
+    implementation 'org.postgresql:postgresql'
+    implementation 'org.springframework.cloud:spring-cloud-starter-sleuth:2.2.1.RELEASE'
+    implementation 'org.springframework.cloud:spring-cloud-starter-zipkin:2.2.1.RELEASE'
+    //table processing
+    compile group: 'tech.tablesaw', name: 'tablesaw-core', version: '0.38.1'
 
+    //test
+  //  testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.mockito:mockito-core:3.3.3'
+    testImplementation ('org.junit.jupiter:junit-jupiter-api')
+    testCompile ('org.junit.jupiter:junit-jupiter-params')
+    testRuntime ('org.junit.jupiter:junit-jupiter-engine')
+    testCompile ('org.mockito:mockito-junit-jupiter')
+    test.useJUnitPlatform()
 }
+
+bootJar {
+    baseName = 'service-business-statistic'
+    version = '1.0.0-SNAPSHOT'
+}
+
+springBoot {
+    mainClassName = 'ml.socshared.bstatistics.Main'
+}
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
+
+check.dependsOn jacocoTestReport
