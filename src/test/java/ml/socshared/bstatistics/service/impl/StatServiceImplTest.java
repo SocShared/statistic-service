@@ -1,13 +1,15 @@
 package ml.socshared.bstatistics.service.impl;
 
+
 import ml.socshared.bstatistics.config.Constants;
-import ml.socshared.bstatistics.domain.db.GroupInfo;
-import ml.socshared.bstatistics.domain.db.PostInfo;
+import ml.socshared.bstatistics.domain.db.*;
 import ml.socshared.bstatistics.domain.object.*;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.exception.HttpNotFoundException;
 import ml.socshared.bstatistics.repository.GroupInfoRepository;
+import ml.socshared.bstatistics.repository.GroupRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
+import ml.socshared.bstatistics.repository.PostRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,11 +26,18 @@ public class StatServiceImplTest {
 
     StatServiceImpl service;
     GroupInfoRepository groupInfoRep = Mockito.mock(GroupInfoRepository.class);
-    PostInfoRepository postInfoRepository = Mockito.mock(PostInfoRepository.class);
+    PostInfoRepository postInfoRep = Mockito.mock(PostInfoRepository.class);
+    GroupRepository groupRep = Mockito.mock(GroupRepository.class);
+    PostRepository postRep = Mockito.mock(PostRepository.class);
+
     List<GroupInfo> gl;
     List<Double> onlineValueOfDay;
     List<Double> onlineValueOfTime19or20;
     List<Double> onlineValueOfTime21;
+
+    public StatServiceImpl makeService() {
+        return new StatServiceImpl(groupInfoRep, groupRep, postInfoRep, postRep);
+    }
 
     @BeforeEach
     public void cookData() {
@@ -72,7 +81,7 @@ public class StatServiceImplTest {
         Mockito.when(groupInfoRep.findBetweenDates(Mockito.any(), Mockito.eq(LocalDate.from(begin1)),
                 Mockito.eq(LocalDate.from(end1)))).thenReturn(gl);
 
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        service = makeService();
         TimeSeries<Integer> res =  service.getOnlineByTime("111", LocalDate.from(begin1), LocalDate.from(begin1));
 
         Assertions.assertEquals(res.getData(), Arrays.asList(10, 10, 10));
@@ -90,7 +99,7 @@ public class StatServiceImplTest {
                 Mockito.anyString(), Mockito.any(), Mockito.any()
         ))
                 .thenReturn(Collections.emptyList());
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        service = new StatServiceImpl(groupInfoRep, groupRep, postInfoRep, postRep);
 
         Assertions.assertThrows(HttpNotFoundException.class,
                 ()-> service.getOnlineByTime("1", LocalDate.now(), LocalDate.now()));
@@ -98,18 +107,20 @@ public class StatServiceImplTest {
 
     @Test
     public void getPostInfoByTimeTestByOneDay() {
-
+        Post post = new Post(new PostId("1", "1"), 100, 100, 100, 100);
         List<PostInfo> postInfo = Arrays.asList(
-                new PostInfo(1, "1", "1", ZonedDateTime.now(), 1, 1, 1, 1),
-                new PostInfo(1, "1", "1", ZonedDateTime.now(), 2, 2, 2, 2),
-                new PostInfo(1, "1", "1", ZonedDateTime.now(), 3, 3, 3, 3)
+                new PostInfo(1, post, ZonedDateTime.now(), 1, 1, 1, 1),
+                new PostInfo(1, post, ZonedDateTime.now(), 2, 2, 2, 2),
+                new PostInfo(1, post, ZonedDateTime.now(), 3, 3, 3, 3)
         );
 
-        Mockito.when(postInfoRepository.findPostInfoByPeriod(
+        Mockito.when(postInfoRep.findPostInfoByPeriod(
                 Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any()
         ))
                 .thenReturn(postInfo);
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        service = makeService();
+
         PostInfoByTime info = service.getPostInfoByTime("1", "1", LocalDate.now(), LocalDate.now());
 
         Assertions.assertEquals(postInfo.size(), info.getVariabilityNumberViews().getSize());
@@ -131,24 +142,26 @@ public class StatServiceImplTest {
 
     @Test
     public void getPostInfoByTimeTestByFewDay() {
-
+        Post post = new Post(new PostId("1", "1"), 100, 100, 100, 100);
         List<PostInfo> postInfo = Arrays.asList(
-                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(2), 1, 2, 3, 4),
-                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(2), 2, 2, 2, 2),
-                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(2), 3, 3, 3, 3),
-                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(1), 1, 2, 3, 4),
-                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(1), 2, 2, 2, 2),
-                new PostInfo(1, "1", "1", ZonedDateTime.now().minusDays(1), 3, 3, 3, 3),
-                new PostInfo(1, "1", "1", ZonedDateTime.now(), 1, 2, 3, 4),
-                new PostInfo(1, "1", "1", ZonedDateTime.now(), 2, 2, 2, 2),
-                new PostInfo(1, "1", "1", ZonedDateTime.now(), 3, 3, 3, 3)
+                new PostInfo(1, post, ZonedDateTime.now().minusDays(2), 1, 2, 3, 4),
+                new PostInfo(1, post, ZonedDateTime.now().minusDays(2), 2, 2, 2, 2),
+                new PostInfo(1, post, ZonedDateTime.now().minusDays(2), 3, 3, 3, 3),
+                new PostInfo(1, post, ZonedDateTime.now().minusDays(1), 1, 2, 3, 4),
+                new PostInfo(1, post, ZonedDateTime.now().minusDays(1), 2, 2, 2, 2),
+                new PostInfo(1, post, ZonedDateTime.now().minusDays(1), 3, 3, 3, 3),
+                new PostInfo(1, post, ZonedDateTime.now(), 1, 2, 3, 4),
+                new PostInfo(1, post, ZonedDateTime.now(), 2, 2, 2, 2),
+                new PostInfo(1, post, ZonedDateTime.now(), 3, 3, 3, 3)
         );
 
-        Mockito.when(postInfoRepository.findPostInfoByPeriod(
+        Mockito.when(postInfoRep.findPostInfoByPeriod(
                 Mockito.anyString(), Mockito.anyString(), Mockito.any(), Mockito.any()
         ))
                 .thenReturn(postInfo);
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        service = makeService();
+
         PostInfoByTime info = service.getPostInfoByTime("1", "1", LocalDate.now().minusDays(2), LocalDate.now());
 
         Assertions.assertEquals(3, info.getVariabilityNumberViews().getSize());
@@ -172,12 +185,13 @@ public class StatServiceImplTest {
     @Test
     public void updateInformationOfPostTestWhenOldInformationIsMissing() {
 
-        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
                 Mockito.anyString(), Mockito.anyString()
         ))
                 .thenReturn(Collections.emptyList());
         ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        service = makeService();
 
         InformationOfPost info = new InformationOfPost();
         info.setGroupId("111");
@@ -189,10 +203,10 @@ public class StatServiceImplTest {
         info.setTime(Util.timeUtc());
 
         service.updateInformationOfPost(Collections.singletonList(info));
-        Mockito.verify(postInfoRepository, Mockito.times(1)).save(args.capture());
+        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
         PostInfo result = args.getValue();
-        Assertions.assertEquals(info.getGroupId(), result.getGroupId());
-        Assertions.assertEquals(info.getPostId(), result.getPostId());
+        Assertions.assertEquals(info.getGroupId(), result.getPost().getId().getGroupId());
+        Assertions.assertEquals(info.getPostId(), result.getPost().getId().getPostId());
         Assertions.assertEquals(info.getComments(), result.getComments());
         Assertions.assertEquals(info.getLikes(), result.getLikes());
         Assertions.assertEquals(info.getShares(), result.getShare());
@@ -204,33 +218,37 @@ public class StatServiceImplTest {
     public void  updateInformationOfPostTestWhenDbHaveData() {
         final String groupId = "111";
         final String postId  = "222";
+        final Post post = new Post(new PostId(groupId, postId), 12, 10, 8, 6);
         final ZonedDateTime time1 = ZonedDateTime.now(ZoneOffset.UTC);
         final ZonedDateTime time2 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(2);
         final ZonedDateTime time3 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(4);
         PostInfo info1 = new PostInfo();
         PostInfo info2 = new PostInfo();
-        info1.setGroupId(groupId);
-        info1.setPostId(postId);
-        info1.setLikes(1);
-        info1.setShare(2);
-        info1.setComments(3);
+        info1.setPost(post);
         info1.setViews(4);
+        info1.setComments(3);
+        info1.setShare(2);
+        info1.setLikes(1);
         info1.setDateAddedRecord(time1);
 
-        info2.setGroupId(groupId);
-        info2.setPostId(postId);
-        info2.setLikes(5);
-        info2.setShare(6);
-        info2.setComments(7);
+        info2.setPost(post);
         info2.setViews(8);
+        info2.setComments(7);
+        info2.setShare(6);
+        info2.setLikes(5);
         info2.setDateAddedRecord(time2);
 
-        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+
+        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
                 Mockito.anyString(), Mockito.anyString()
         ))
                 .thenReturn(Arrays.asList(info1, info2));
         ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        Mockito.when(postRep.findById(
+                Mockito.any()
+        )).thenReturn(Optional.of(post));
+        service = makeService();
 
         InformationOfPost postInfo = new InformationOfPost();
         postInfo.setGroupId(groupId);
@@ -243,7 +261,7 @@ public class StatServiceImplTest {
 
         service.updateInformationOfPost(Collections.singletonList(postInfo));
 
-        Mockito.verify(postInfoRepository, Mockito.times(1)).save(args.capture());
+        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
         PostInfo result = args.getValue();
         Assertions.assertEquals(4, result.getLikes());
         Assertions.assertEquals(3, result.getShare());
@@ -255,20 +273,13 @@ public class StatServiceImplTest {
 
     @Test
     public void getPostSummaryFoundData() {
-        List<PostInfo> value = Arrays.asList(
-                new PostInfo(1, "1", "2", ZonedDateTime.now(ZoneOffset.UTC),
-                        20, 5, 12, 3),
-                new PostInfo(2, "1", "2", ZonedDateTime.now(ZoneOffset.UTC),
-                        12, 3, 4, 5),
-                new PostInfo(1, "1", "2", ZonedDateTime.now(ZoneOffset.UTC),
-                        50, 20, 30, 25));
+        Post post = new Post(new PostId("1", "2"), 82, 33, 28, 46);
 
+        Mockito.when(postRep.findById(
+            Mockito.eq(new PostId("1", "2"))
+    )).thenReturn(Optional.of(post));
 
-        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
-            Mockito.eq("1"), Mockito.eq("2")
-    )).thenReturn(value);
-
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        service = makeService();
 
         PostSummary res = service.getPostSummary("1", "2");
 
@@ -284,22 +295,24 @@ public class StatServiceImplTest {
 
     @Test
     public void getPostSummaryNotFoundData() {
-        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
                 Mockito.anyString(), Mockito.anyString()
         )).thenReturn(Collections.emptyList());
 
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        service = makeService();
+
         Assertions.assertThrows( HttpNotFoundException.class, ()-> service.getPostSummary("1", "2"));
     }
 
     @Test
     public void getPostInfoByTimeTestNotFound() {
 
-        Mockito.when(postInfoRepository.findPostInfoByGroupIdAndPostId(
+        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
                 Mockito.anyString(), Mockito.anyString()
         )).thenReturn(Collections.emptyList());
 
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        service = makeService();
+
         Assertions.assertThrows(HttpNotFoundException.class,
                 () ->service.getPostInfoByTime("1", "2", LocalDate.now(), LocalDate.now()));
     }
@@ -312,7 +325,8 @@ public class StatServiceImplTest {
         ))
                 .thenReturn(Optional.empty());
         ArgumentCaptor<GroupInfo> args = ArgumentCaptor.forClass(GroupInfo.class);
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        service = makeService();
 
         List<InformationOfGroup> data = Arrays.asList(
                 new InformationOfGroup("1", 100, 150, LocalDateTime.now()),
@@ -337,22 +351,28 @@ public class StatServiceImplTest {
     @Test
     public void updateInformationOfGroupTestDbContainInfo() {
 
-        Mockito.when(groupInfoRep.getNumberSubscribers(
-                Mockito.eq("1")
-        )).thenReturn(Optional.of(500L));
-        Mockito.when(groupInfoRep.getNumberSubscribers(
-                Mockito.eq("2")
-        )).thenReturn(Optional.of(100L));
-        Mockito.when(groupInfoRep.getNumberSubscribers(
-                Mockito.eq("3")
-        )).thenReturn(Optional.of(150L));
+        Mockito.when(
+                groupRep.findById(Mockito.eq("1"))
+        )
+                .thenReturn(Optional.of(new Group("1", 500)));
+
+        Mockito.when(
+                groupRep.findById(Mockito.eq("2"))
+        )
+                .thenReturn(Optional.of(new Group("2", 100)));
+
+        Mockito.when(
+                groupRep.findById(Mockito.eq("3"))
+        )
+                .thenReturn(Optional.of(new Group("3", 150)));
 
         Mockito.when(groupInfoRep.getOldestTimeOfRecord(
                 Mockito.anyString()
         ))
                 .thenReturn(Optional.of(new OldestTimeRecord(ZonedDateTime.now().minusMinutes(15))));
         ArgumentCaptor<GroupInfo> args = ArgumentCaptor.forClass(GroupInfo.class);
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+
+        service = makeService();
 
         List<InformationOfGroup> data = Arrays.asList(
                 new InformationOfGroup("1", 100, 560, LocalDateTime.now()),
@@ -362,6 +382,7 @@ public class StatServiceImplTest {
 
 
         service.updateInformationOfGroup(data);
+
         Mockito.verify(groupInfoRep, times(3)).save(args.capture());
         List<GroupInfo> res = args.getAllValues();
 
@@ -381,7 +402,7 @@ public class StatServiceImplTest {
         ))
                 .thenReturn(Optional.of(new OldestTimeRecord(ZonedDateTime.now().minusMinutes(15))));
 
-        service = new StatServiceImpl(groupInfoRep, postInfoRepository);
+        service = makeService();
 
         Assertions.assertThrows(HttpIllegalBodyRequest.class,
                 () -> service.updateInformationOfGroup(Arrays.asList(

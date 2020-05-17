@@ -24,8 +24,11 @@ public class PostInfo {
     @GeneratedValue
     @Column(name="id")
     Integer id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="post_id")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "id_group_id"),
+            @JoinColumn(name = "id_post_id")
+    })
     Post post;
     @Column(name="date_added_record", nullable = false)
     ZonedDateTime dateAddedRecord;

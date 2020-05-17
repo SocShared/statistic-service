@@ -1,20 +1,18 @@
 package ml.socshared.bstatistics.domain.db;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import java.io.Serializable;
 
 @Embeddable
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 public class PostId implements Serializable {
+    @Column(name = "group_id")
     String groupId;
+    @Column(name = "post_id")
     String postId;
 }

@@ -22,7 +22,7 @@ public class GroupInfo {
     @Id
     @GeneratedValue
     Integer id;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY,  cascade = CascadeType.ALL)
     @JoinColumn(name = "group_id", nullable = false)
     Group group;
     @Column(nullable = false)

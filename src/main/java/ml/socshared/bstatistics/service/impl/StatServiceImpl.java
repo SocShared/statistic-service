@@ -292,39 +292,31 @@ public class StatServiceImpl implements StatService {
                 }
             }
         }
-        //find  latest record
-        Table latest = t.summarize(dCol, AggregateFunctions.latestDateTime).by(idCol);
-
-        Map<String, Group> before_group_value = new HashMap<>();
-        Map<String, Group> new_group_value = new HashMap<>();
-        //update latest value
-        for(Row row : latest) {
-            String id = row.getString("id");
-            Optional<Group> before = groupRep.findById(id);
-            if(before.isPresent()) {
-                before_group_value.put(id, before.get());
+        data.sort(Comparator.comparing(InformationOfGroup::getTime));
+        Map<String, Group> state = new HashMap<>();
+        for(String id : unique_ids) {
+            Optional<Group> g = groupRep.findById(id);
+            if(g.isPresent()) {
+                state.put(id, g.get());
             }
-            Group g = new Group();
-            LocalDateTime time = row.getDateTime("Latest Date-Time [time]");
-            g.setGroupId(id);
-            g.setSubscribers(t.where(
-                    idCol.isEqualTo(id).and(dCol.isEqualTo(time))
-            )
-                    .intColumn("sub").get(0));
-            new_group_value.put(g.getGroupId(), g);
-            groupRep.save(g);
         }
 
         //TODO change object for complex key
         for(InformationOfGroup el : data) {
             GroupInfo go = new GroupInfo();
-            if(before_group_value.containsKey(el.getGroupId())) {
-                Group group = before_group_value.get(el.getGroupId());
+            Group group;
+            if(state.containsKey(el.getGroupId())) {
+                group = state.get(el.getGroupId());
                 go.setSubscribers((el.getSubscribersNumber() - group.getSubscribers()));
             } else {
                 go.setSubscribers(el.getSubscribersNumber());
+                group = new Group();
+                group.setGroupId(el.getGroupId());
             }
-            go.setGroup(new_group_value.get(el.getGroupId()));
+            group.setSubscribers(el.getSubscribersNumber());
+            groupRep.save(group);
+
+            go.setGroup(group);
             go.setOnline(el.getSubscribersOnline());
             go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
             groupInfoRep.save(go);
@@ -364,6 +356,7 @@ public class StatServiceImpl implements StatService {
         post.setLikes(info.getLikes());
         post.setShares(info.getShares());
         post.setViews(info.getViews());
+        return post;
     }
 
     private static <ValueT, ContainerT>  List<ValueT> applyGroupValuesByDay(

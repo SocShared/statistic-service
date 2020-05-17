@@ -14,9 +14,11 @@ import java.util.Optional;
 
 @Repository
 public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
+
+    @Query("SELECT pi FROM PostInfo pi WHERE (pi.post.id.groupId = :groupId) AND (pi.post.id.postId = :postId)")
     List<PostInfo> findPostInfoByGroupIdAndPostId(String groupId, String postId);
 
-    @Query("Select info FROM PostInfo info WHERE (info.groupId = :groupId and info.postId = :postId) and (info.dateAddedRecord >= :begin and info.dateAddedRecord <= :end)")
+    @Query("Select info FROM PostInfo info WHERE (info.post.id.groupId = :groupId and info.post.id.postId = :postId) and (info.dateAddedRecord >= :begin and info.dateAddedRecord <= :end)")
     List<PostInfo> findPostInfoByPeriod(@Param("groupId") String groupId,
                                         @Param("postId")  String postId,
                                         @Param("begin")   ZonedDateTime begin,
@@ -25,7 +27,7 @@ public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
     @Query("SELECT " +
              " new ml.socshared.bstatistics.domain.object.OldestTimeRecord(MAX(pi.dateAddedRecord)) " +
             " FROM  PostInfo pi " +
-            " GROUP BY pi.groupId, pi.postId " +
-            " HAVING pi.groupId = :groupId and pi.postId = :postId")
+            " GROUP BY pi.post " +
+            " HAVING pi.post.id.groupId = :groupId and pi.post.id.postId = :postId")
     Optional<OldestTimeRecord> getTimeOfYoungestRecord(String groupId, String postId);
 }
