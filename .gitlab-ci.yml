@@ -1,0 +1,39 @@
+stages:
+  - build
+  - docker-build
+  - docker-push
+  - docker-deply-swarm
+
+before_script:
+  - chmod +x gradlew
+
+build:
+  stage: build
+  script: ./gradlew clean build
+  artifacts:
+    paths:
+      - build/libs/service-business-statistic-1.0.0-SNAPSHOT.jar
+
+docker-build:
+  stage: docker-build
+  script:
+    - sudo docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
+
+docker-push:
+  stage: docker-push
+  script:
+    - sudo docker login -u "$CI_DOCKER_LOGIN" -p "&CI_DOCKER_PASSWORD"
+    - sudo docker push $CI_DOCKER_LOGIN/service-business-statistic
+
+docker-deploy:
+  script:
+    - touch .env_bstat
+    - echo "POSTGRES_USER=admin" >> .env_bstat
+    - echo "POSTGRES_PASS=admin" >> .env_bstat
+    - echo "POSTGRES_DB=$POSTGRES_DB" >> .env_bstat
+    - echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env_bstat
+    - sudo docker stack deploy -c docker-compose.yaml socshared
+
+
+
+

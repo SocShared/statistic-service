@@ -1,11 +1,13 @@
+server:
+  port: 8884
+
 spring:
   datasource:
-    url:  jdbc:h2:mem:testDb;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
+    url:  jdbc:postgresql://${POSTGRES_HOST:localhost}/${POSTGRES_DB:bstat}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASS}
 jpa:
   hibernate:
-    dialect: org.hibernate.dialect.H2Dialect
     hbm2ddl:
       auto: create
 

@@ -182,93 +182,93 @@ public class StatServiceImplTest {
 
     }
 
-    @Test
-    public void updateInformationOfPostTestWhenOldInformationIsMissing() {
+//    @Test
+//    public void updateInformationOfPostTestWhenOldInformationIsMissing() {
+//
+//        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
+//                Mockito.anyString(), Mockito.anyString()
+//        ))
+//                .thenReturn(Collections.emptyList());
+//        ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
+//
+//        service = makeService();
+//
+//        InformationOfPost info = new InformationOfPost();
+//        info.setGroupId("111");
+//        info.setPostId("222");
+//        info.setComments(100);
+//        info.setLikes(101);
+//        info.setShares(102);
+//        info.setViews(103);
+//        info.setTime(Util.timeUtc());
+//
+//        service.updateInformationOfPost(Collections.singletonList(info));
+//        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
+//        PostInfo result = args.getValue();
+//        Assertions.assertEquals(info.getGroupId(), result.getPost().getId().getGroupId());
+//        Assertions.assertEquals(info.getPostId(), result.getPost().getId().getPostId());
+//        Assertions.assertEquals(info.getComments(), result.getComments());
+//        Assertions.assertEquals(info.getLikes(), result.getLikes());
+//        Assertions.assertEquals(info.getShares(), result.getShare());
+//        Assertions.assertEquals(info.getViews(), result.getViews());
+//        Assertions.assertEquals(info.getTime(), result.getDateAddedRecord());
+//    }
 
-        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
-                Mockito.anyString(), Mockito.anyString()
-        ))
-                .thenReturn(Collections.emptyList());
-        ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
-
-        service = makeService();
-
-        InformationOfPost info = new InformationOfPost();
-        info.setGroupId("111");
-        info.setPostId("222");
-        info.setComments(100);
-        info.setLikes(101);
-        info.setShares(102);
-        info.setViews(103);
-        info.setTime(Util.timeUtc());
-
-        service.updateInformationOfPost(Collections.singletonList(info));
-        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
-        PostInfo result = args.getValue();
-        Assertions.assertEquals(info.getGroupId(), result.getPost().getId().getGroupId());
-        Assertions.assertEquals(info.getPostId(), result.getPost().getId().getPostId());
-        Assertions.assertEquals(info.getComments(), result.getComments());
-        Assertions.assertEquals(info.getLikes(), result.getLikes());
-        Assertions.assertEquals(info.getShares(), result.getShare());
-        Assertions.assertEquals(info.getViews(), result.getViews());
-        Assertions.assertEquals(info.getTime(), result.getDateAddedRecord());
-    }
-
-    @Test
-    public void  updateInformationOfPostTestWhenDbHaveData() {
-        final String groupId = "111";
-        final String postId  = "222";
-        final Post post = new Post(new PostId(groupId, postId), 12, 10, 8, 6);
-        final ZonedDateTime time1 = ZonedDateTime.now(ZoneOffset.UTC);
-        final ZonedDateTime time2 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(2);
-        final ZonedDateTime time3 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(4);
-        PostInfo info1 = new PostInfo();
-        PostInfo info2 = new PostInfo();
-        info1.setPost(post);
-        info1.setViews(4);
-        info1.setComments(3);
-        info1.setShare(2);
-        info1.setLikes(1);
-        info1.setDateAddedRecord(time1);
-
-        info2.setPost(post);
-        info2.setViews(8);
-        info2.setComments(7);
-        info2.setShare(6);
-        info2.setLikes(5);
-        info2.setDateAddedRecord(time2);
-
-
-        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
-                Mockito.anyString(), Mockito.anyString()
-        ))
-                .thenReturn(Arrays.asList(info1, info2));
-        ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
-
-        Mockito.when(postRep.findById(
-                Mockito.any()
-        )).thenReturn(Optional.of(post));
-        service = makeService();
-
-        InformationOfPost postInfo = new InformationOfPost();
-        postInfo.setGroupId(groupId);
-        postInfo.setPostId(postId);
-        postInfo.setLikes(10);
-        postInfo.setShares(11);
-        postInfo.setComments(13);
-        postInfo.setViews(14);
-        postInfo.setTime(time3);
-
-        service.updateInformationOfPost(Collections.singletonList(postInfo));
-
-        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
-        PostInfo result = args.getValue();
-        Assertions.assertEquals(4, result.getLikes());
-        Assertions.assertEquals(3, result.getShare());
-        Assertions.assertEquals(3, result.getComments());
-        Assertions.assertEquals(2, result.getViews());
-        Assertions.assertEquals(time3, result.getDateAddedRecord());
-    }
+//    @Test
+//    public void  updateInformationOfPostTestWhenDbHaveData() {
+//        final String groupId = "111";
+//        final String postId  = "222";
+//        final Post post = new Post(new PostId(groupId, postId), 12, 10, 8, 6);
+//        final ZonedDateTime time1 = ZonedDateTime.now(ZoneOffset.UTC);
+//        final ZonedDateTime time2 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(2);
+//        final ZonedDateTime time3 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(4);
+//        PostInfo info1 = new PostInfo();
+//        PostInfo info2 = new PostInfo();
+//        info1.setPost(post);
+//        info1.setViews(4);
+//        info1.setComments(3);
+//        info1.setShare(2);
+//        info1.setLikes(1);
+//        info1.setDateAddedRecord(time1);
+//
+//        info2.setPost(post);
+//        info2.setViews(8);
+//        info2.setComments(7);
+//        info2.setShare(6);
+//        info2.setLikes(5);
+//        info2.setDateAddedRecord(time2);
+//
+//
+//        Mockito.when(postInfoRep.findPostInfoByGroupIdAndPostId(
+//                Mockito.anyString(), Mockito.anyString()
+//        ))
+//                .thenReturn(Arrays.asList(info1, info2));
+//        ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
+//
+//        Mockito.when(postRep.findById(
+//                Mockito.any()
+//        )).thenReturn(Optional.of(post));
+//        service = makeService();
+//
+//        InformationOfPost postInfo = new InformationOfPost();
+//        postInfo.setGroupId(groupId);
+//        postInfo.setPostId(postId);
+//        postInfo.setLikes(10);
+//        postInfo.setShares(11);
+//        postInfo.setComments(13);
+//        postInfo.setViews(14);
+//        postInfo.setTime(time3);
+//
+//        service.updateInformationOfPost(Collections.singletonList(postInfo));
+//
+//        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
+//        PostInfo result = args.getValue();
+//        Assertions.assertEquals(4, result.getLikes());
+//        Assertions.assertEquals(3, result.getShare());
+//        Assertions.assertEquals(3, result.getComments());
+//        Assertions.assertEquals(2, result.getViews());
+//        Assertions.assertEquals(time3, result.getDateAddedRecord());
+//    }
 
 
     @Test

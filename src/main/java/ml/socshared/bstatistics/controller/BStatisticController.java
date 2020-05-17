@@ -99,8 +99,8 @@ public class BStatisticController implements BStatisticApi {
         return LocalDate.now();
     }
 
-    @GetMapping("all")
-    public Iterable<PostInfo> getPostInfoAll() {
-        return rep.findAll();
-    }
+//    @GetMapping("all")
+//    public Iterable<PostInfo> getPostInfoAll() {
+//        return rep.findAll();
+//    }
 }
