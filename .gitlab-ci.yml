@@ -19,7 +19,7 @@ build:
 docker-build:
   stage: docker-build
   script:
-    - docker rmi $(docker images -a)
+    - docker 2>/dev/null 1>&2 rmi `docker images -aq` || true
     - docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
 
 docker-push:
