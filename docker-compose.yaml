@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   bstat:
-    image: lexgv/bstat
+    image: lexgv/service-business-statistic
     ports:
       - 8884:8884
     env_file:

@@ -1,3 +1,5 @@
+image: java:11
+
 stages:
   - build
   - docker-build
@@ -17,22 +19,24 @@ build:
 docker-build:
   stage: docker-build
   script:
-    - sudo docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
+    - docker 2>/dev/null 1>&2 rmi `docker images -aq` || true
+    - docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
 
 docker-push:
   stage: docker-push
   script:
-    - sudo docker login -u "$CI_DOCKER_LOGIN" -p "$CI_DOCKER_PASSWORD"
-    - sudo docker push $CI_DOCKER_LOGIN/service-business-statistic
+    - docker login -u "$CI_DOCKER_LOGIN" -p "$CI_DOCKER_PASSWORD"
+    - docker push $CI_DOCKER_LOGIN/service-business-statistic
 
-docker-deploy:
+docker-deply-swarm:
+  stage: docker-deply-swarm
   script:
     - touch .env_bstat
     - echo "POSTGRES_USER=admin" >> .env_bstat
     - echo "POSTGRES_PASS=admin" >> .env_bstat
     - echo "POSTGRES_DB=$POSTGRES_DB" >> .env_bstat
     - echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env_bstat
-    - sudo docker stack deploy -c docker-compose.yaml socshared
+    - docker stack deploy -c docker-compose.yaml socshared
 
 
 
