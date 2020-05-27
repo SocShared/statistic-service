@@ -7,10 +7,9 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASS}
     driver-class-name: org.postgresql.Driver
-jpa:
-  hibernate:
-    hbm2ddl:
-      auto: create
+  jpa:
+    generate-ddl: true
+
 
 service:
   news:
