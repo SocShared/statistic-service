@@ -12,9 +12,6 @@ jpa:
       auto: create
 
 service:
-  stat:
-    kde-h: 0.3337
-    kde_estimate_size: 200
   news:
     tracking_num_days: 3
     number_of_checks_per_day: 50
