@@ -36,6 +36,7 @@ docker-deply-swarm:
     - echo "POSTGRES_PASS=admin" >> .env_bstat
     - echo "POSTGRES_DB=$POSTGRES_DB" >> .env_bstat
     - echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env_bstat
+    - echo "SPRING_PROFILE=$SPRING_PROFILE" >> .env_bstat
     - docker stack deploy -c docker-compose.yaml socshared
 
 
