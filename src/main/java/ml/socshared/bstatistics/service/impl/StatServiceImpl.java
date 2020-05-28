@@ -1,5 +1,6 @@
 package ml.socshared.bstatistics.service.impl;
 
+import it.unimi.dsi.fastutil.Hash;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.config.Constants;
 import ml.socshared.bstatistics.domain.db.*;
@@ -11,7 +12,10 @@ import ml.socshared.bstatistics.repository.GroupRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
 import ml.socshared.bstatistics.repository.PostRepository;
 import ml.socshared.bstatistics.service.StatService;
+import ml.socshared.bstatistics.service.sentry.SentrySender;
+import ml.socshared.bstatistics.service.sentry.SentryTag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import tech.tablesaw.api.*;
 
@@ -31,14 +35,17 @@ public class StatServiceImpl implements StatService {
     private GroupRepository groupRep;
     private PostInfoRepository postInfoRep;
     private PostRepository postRep;
+    private SentrySender sentrySender;
 
     @Autowired
     public StatServiceImpl(GroupInfoRepository gir, GroupRepository gr,
-                           PostInfoRepository pir, PostRepository pr) {
+                           PostInfoRepository pir, PostRepository pr,
+                           SentrySender sSender) {
         this.groupInfoRep = gir;
         this.groupRep = gr;
         this.postInfoRep = pir;
         this.postRep = pr;
+        this.sentrySender = sSender;
     }
 
 
@@ -69,6 +76,14 @@ public class StatServiceImpl implements StatService {
         res.setBegin(begin);
         res.setEnd(end);
         res.setSize(data.size());
+
+        Map<String, Object> additional = new HashMap<>();
+        additional.put("group_id", groupId);
+        additional.put("time_begin", begin);
+        additional.put("time_end", end);
+        sentrySender.sentryMessage("get time series of group", additional,
+                Collections.singletonList(SentryTag.GroupOnline));
+
         return res;
     }
 
@@ -104,6 +119,14 @@ public class StatServiceImpl implements StatService {
         res.setVariabilityNumberShares(new DataList<>(size, share));
         res.setVariabilityNumberLikes(new DataList<>(size, likes));
         res.setVariabilityNumberComments(new DataList<>(size, comments));
+
+        Map<String, Object> additional = new HashMap<>();
+        additional.put("post_id", new SentryPostId(groupId, postId));
+        additional.put("time_begin", begin);
+        additional.put("time_end", end);
+        sentrySender.sentryMessage("get time series of post", additional,
+                Collections.singletonList(SentryTag.PostInfo));
+
         return res;
     }
 
@@ -130,6 +153,11 @@ public class StatServiceImpl implements StatService {
         res.setNumberViews(post.get().getViews());
         res.setEngagementRate(engagementRate(res.getNumberViews(), res.getNumberReposts(),
                                              res.getNumberComments(), res.getNumberLikes()));
+
+        Map<String, Object> additional = new HashMap<>();
+        additional.put("post_id", new SentryPostId(groupId, postId));
+        sentrySender.sentryMessage("get post summary", additional,
+                Collections.singletonList(SentryTag.PostSummary));
         return res;
     }
 
@@ -233,9 +261,11 @@ public class StatServiceImpl implements StatService {
             }
         }
 
+        Set<SentryPostId> post_ids =  new HashSet<>();
         //Save data
         for(InformationOfPost i : data) {
             PostId id = new PostId(i.getGroupId(), i.getPostId());
+            post_ids.add(new SentryPostId(i.getGroupId(), i.getPostId()));
             if (!state.containsKey(id)) {
                 Post post = information2Post(i);
                 post = postRep.save(post);
@@ -264,6 +294,10 @@ public class StatServiceImpl implements StatService {
             }
         }
 
+        Map<String, Object> additional = new HashMap<>();
+        additional.put("post_ids", post_ids);
+        sentrySender.sentryMessage("update information of posts", additional,
+                Collections.singletonList(SentryTag.PostUpdate));
     }
 
 
@@ -318,8 +352,11 @@ public class StatServiceImpl implements StatService {
             }
         }
 
+        Set<String> groupsIds = new HashSet<>();
         //TODO change object for complex key
         for(InformationOfGroup el : data) {
+
+            groupsIds.add(el.getGroupId());
             GroupInfo go = new GroupInfo();
             Group group;
             if(state.containsKey(el.getGroupId())) {
@@ -338,6 +375,11 @@ public class StatServiceImpl implements StatService {
             go.setTimeAddedRecord(ZonedDateTime.of(el.getTime(), ZoneOffset.UTC));
             groupInfoRep.save(go);
         }
+
+        Map<String, Object> additional = new HashMap<>();
+        additional.put("group_ids", groupsIds);
+        sentrySender.sentryMessage("update information of group", additional,
+                                    Collections.singletonList(SentryTag.GroupUpdate));
     }
 
 

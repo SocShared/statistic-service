@@ -30,7 +30,12 @@ dependencies {
     // implementation  group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-ribbon', version: '2.2.2.RELEASE'
     //RestControllers + tomcat
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.5.RELEASE'
-    
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:2.2.1.RELEASE'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-ribbon', version: '2.2.2.RELEASE'
+    //sentry
+    implementation 'io.sentry:sentry-spring:1.7.23'
+    implementation 'io.sentry:sentry:1.7.23'
+
     //Logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.2.5.RELEASE'
     //DataBases
@@ -40,6 +45,11 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     implementation 'org.springframework.cloud:spring-cloud-starter-sleuth:2.2.1.RELEASE'
     implementation 'org.springframework.cloud:spring-cloud-starter-zipkin:2.2.1.RELEASE'
+    // Генерация JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.10.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.10.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.10.5'
+
     //table processing
     compile group: 'tech.tablesaw', name: 'tablesaw-core', version: '0.38.1'
 
@@ -51,6 +61,7 @@ dependencies {
     testCompile ('org.junit.jupiter:junit-jupiter-params')
     testRuntime ('org.junit.jupiter:junit-jupiter-engine')
     testCompile ('org.mockito:mockito-junit-jupiter')
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     test.useJUnitPlatform()
 }
 
