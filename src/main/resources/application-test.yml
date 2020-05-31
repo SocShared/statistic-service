@@ -16,3 +16,10 @@ service:
   news:
     tracking_num_days: 3
     number_of_checks_per_day: 50
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: auditevents, beans, caches, conditions, configprops, health, httptrace, info, loggers, metrics, mappings, shutdown
