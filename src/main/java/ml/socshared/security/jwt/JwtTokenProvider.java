@@ -1,18 +1,19 @@
-package ml.socshared.bstatistics.service.jwt;
+package ml.socshared.security.jwt;
 
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ml.socshared.bstatistics.client.AuthClient;
-import ml.socshared.bstatistics.domain.request.CheckTokenRequest;
-import ml.socshared.bstatistics.domain.model.ServiceDetails;
+import ml.socshared.security.client.AuthClient;
+import ml.socshared.security.model.ServiceDetails;
+import ml.socshared.security.request.CheckTokenRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
 
 @Service
 @Slf4j
@@ -30,7 +31,7 @@ public class JwtTokenProvider {
 
         return ServiceDetails.builder()
                 .authorities(Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role)))
-                .username(claims.get("to_service", String.class))
+                .username(claims.get("from_service", String.class))
                 .accountNonLocked(true)
                 .build();
     }

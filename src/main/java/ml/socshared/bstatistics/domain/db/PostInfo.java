@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import ml.socshared.bstatistics.domain.storage.SocialNetwork;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.service.impl.Util;
 
@@ -24,14 +25,14 @@ public class PostInfo {
     @GeneratedValue
     @Column(name="id")
     Integer id;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "id_group_id"),
-            @JoinColumn(name = "id_post_id")
-    })
-    Post post;
+    @Column(name="group_id", nullable = false)
+    String groupId;
+    @Column(name="post_id", nullable = false)
+    String postId;
+    @Column(name = "social_network")
+    SocialNetwork socialNetwork;
     @Column(name="date_added_record", nullable = false)
-    ZonedDateTime dateAddedRecord;
+    LocalDateTime dateAddedRecord;
     Integer views;
     Integer share;
     Integer likes;

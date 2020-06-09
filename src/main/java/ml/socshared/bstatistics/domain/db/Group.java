@@ -14,7 +14,6 @@ import javax.persistence.Table;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="group_")
 public class Group {
     @Id
     @Column(name = "group_id")

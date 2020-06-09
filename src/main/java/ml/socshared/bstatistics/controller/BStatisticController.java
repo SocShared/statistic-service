@@ -5,11 +5,13 @@ import ml.socshared.bstatistics.api.v1.BStatisticApi;
 import ml.socshared.bstatistics.domain.db.Group;
 import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.*;
+import ml.socshared.bstatistics.domain.storage.SocialNetwork;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
 import ml.socshared.bstatistics.service.StatService;
 import ml.socshared.bstatistics.service.impl.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.*;
@@ -18,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/v1/")
 @Slf4j
+@PreAuthorize("isAuthenticated()")
 public class BStatisticController implements BStatisticApi {
 
     private StatService service;
@@ -32,18 +35,22 @@ public class BStatisticController implements BStatisticApi {
 
 
     @Override
-    @GetMapping("groups/{groupId}/online/time_series")
+    @PreAuthorize("hasRole('SERVICE')")
+    @GetMapping("private/social/{soc}/groups/{groupId}/online/time_series")
     public TimeSeries<Integer> getGroupOnline(@PathVariable String groupId,
+                                              @PathVariable SocialNetwork soc,
                                               @RequestParam(name="begin") Long begin,
                                               @RequestParam(name="end") Long end) {
         log.info("Get online of group");
-        return service.getOnlineByTime(groupId,
+        return service.getOnlineByTime(groupId, soc,
                 LocalDate.from(Instant.ofEpochSecond( begin)), LocalDate.from(Instant.ofEpochSecond(end)));
     }
 
     @Override
-    @GetMapping("groups/{groupId}/subscribers/variability")
+    @PreAuthorize("hasRole('SERVICE')")
+    @GetMapping("private/social/{soc}/groups/{groupId}/subscribers/variability")
     public TimeSeries<Integer> getVariabilitySubscribersOfGroup(@PathVariable String groupId,
+                                                                @PathVariable SocialNetwork soc,
                                                                 @RequestParam Long begin,
                                                                 @RequestParam Long end) {
         log.info("get time series of group (GroupID: " + groupId +") subscribers");
@@ -53,48 +60,59 @@ public class BStatisticController implements BStatisticApi {
     }
 
     @Override
-    @GetMapping("groups/{groupId}/subscribers")
-    public Group getNumberSubscribersOfGroup(@PathVariable  String groupId) {
+    @PreAuthorize("hasRole('SERVICE')")
+    @GetMapping("private/social/{soc}/groups/{groupId}/subscribers")
+    public Group getNumberSubscribersOfGroup(@PathVariable  String groupId, @PathVariable SocialNetwork soc) {
        log.info("request on get short information of group by id: " + groupId);
-        return service.getGroupSubscribers(groupId);
+        return service.getGroupSubscribers(groupId, soc);
     }
 
     @Override
-    @GetMapping("groups/{groupId}/posts/{postId}/time_series")
+    @PreAuthorize("hasRole('SERVICE')")
+    @GetMapping("private/social/{soc}/groups/{groupId}/posts/{postId}/time_series")
     public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable String groupId,
                                                          @PathVariable String postId,
+                                                         @PathVariable SocialNetwork soc,
                                                          @RequestParam(name="begin") Long begin,
                                                          @RequestParam(name="end") Long end) {
         log.info("request on get info by time of post (GroupId: " + groupId + "; PostId: " + postId + ")");
-        return service.getPostInfoByTime(groupId, postId, LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
+        return service.getPostInfoByTime(groupId, postId, soc,LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
                 LocalDate.ofInstant(Instant.ofEpochSecond( end), ZoneOffset.UTC));
     }
 
     @Override
-    @GetMapping("groups/{groupId}/posts/{postId}/summary")
-    public PostSummary getPostInfo(@PathVariable String groupId,
-                                   @PathVariable String postId) {
+    @PreAuthorize("hasRole('SERVICE')")
+    @GetMapping("private/social/{soc}/groups/{groupId}/posts/{postId}/summary")
+    public PostSummary getPostInfo(@PathVariable String groupId, @PathVariable String postId,
+                                   @PathVariable SocialNetwork soc) {
         log.info("request on get info of post (GroupId: " + groupId + "; PostId: " + postId + ")");
-        return service.getPostSummary(groupId, postId);
+        return service.getPostSummary(groupId, postId, soc);
+    }
+
+    @Override
+    public void setTimeSeriesofPost(DataList<InformationOfPost> data) {
+
     }
 
     //TODO оотсутствует точка-входа для передачи данных по числу пользователей онлайн в социальной сети
 
-    @Override
-    @PostMapping("callback/post_info")
-    public void setTimeSeriesofPost(@RequestBody DataList<InformationOfPost> data) {
-        log.info("callback-update: information of post len: " + data.getSize());
-        service.updateInformationOfPost(data.getData());
-    }
+//    @Override
+//    @PreAuthorize("hasRole('SERVICE')")
+//    @PostMapping("private/callback/post_info")
+//    public void setTimeSeriesofPost(@RequestBody DataList<InformationOfPost> data) {
+//        log.info("callback-update: information of post len: " + data.getSize());
+//        service.updateInformationOfPost(data.getData());
+//    }
 
     @Override
-    @PostMapping("callback/group_info")
+    @PreAuthorize("hasRole('SERVICE')")
+    @PostMapping("private/callback/group_info")
     public void setTimeSeriesOfGroup(@RequestBody DataList<InformationOfGroup> data) {
         log.info("callback-update: information of group len: " + data.getSize());
         service.updateInformationOfGroup(data.getData());
     }
-
-    @GetMapping("time")
+    @PreAuthorize("hasRole('SERVICE')")
+    @GetMapping("private/time")
     public LocalDate getTime(){
         return LocalDate.now();
     }

@@ -13,8 +13,8 @@ public class PostInfoByTime {
     String postId;
     LocalDateTime begin;
     LocalDateTime end;
-    DataList<Integer> variabilityNumberViews;
-    DataList<Integer> variabilityNumberLikes;
-    DataList<Integer> variabilityNumberShares;
-    DataList<Integer> variabilityNumberComments;
+    DataList<TimePoint<Integer>> variabilityNumberViews;
+    DataList<TimePoint<Integer>> variabilityNumberLikes;
+    DataList<TimePoint<Integer>> variabilityNumberShares;
+    DataList<TimePoint<Integer>> variabilityNumberComments;
 }

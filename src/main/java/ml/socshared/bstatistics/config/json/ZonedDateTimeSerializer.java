@@ -24,7 +24,7 @@ public class ZonedDateTimeSerializer extends StdSerializer<ZonedDateTime> {
 
     @Override
     public void serialize(ZonedDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeNumber(value.toEpochSecond());
+        gen.writeNumber(value.toInstant().toEpochMilli());
     }
 
 }

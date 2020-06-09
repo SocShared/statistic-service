@@ -26,7 +26,7 @@ public class GroupInfo {
     @JoinColumn(name = "group_id", nullable = false)
     Group group;
     @Column(nullable = false)
-    ZonedDateTime timeAddedRecord = Util.timeUtc();
+    LocalDateTime timeAddedRecord = LocalDateTime.now();
     @Column(nullable =  false)
     Integer online;
     @Column(nullable = false)

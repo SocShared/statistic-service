@@ -1,19 +1,6 @@
 package ml.socshared.bstatistics.repository;
 
 import ml.socshared.bstatistics.domain.db.Post;
-import ml.socshared.bstatistics.domain.db.PostId;
-import ml.socshared.bstatistics.domain.db.PostInfo;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-
-import javax.annotation.Resource;
-
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.List;
 
 //
 //@DataJpaTest

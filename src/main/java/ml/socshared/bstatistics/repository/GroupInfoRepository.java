@@ -1,7 +1,7 @@
 package ml.socshared.bstatistics.repository;
 
 import ml.socshared.bstatistics.domain.db.GroupInfo;
-import ml.socshared.bstatistics.domain.object.OldestTimeRecord;
+import ml.socshared.bstatistics.domain.object.YoungestTimeRecord;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -20,9 +20,9 @@ public interface GroupInfoRepository extends CrudRepository<GroupInfo, Integer>{
                                      @Param("end") LocalDate end);
 
     @Query("SELECT " +
-                " new ml.socshared.bstatistics.domain.object.OldestTimeRecord(MAX(go.timeAddedRecord))" +
+                " new ml.socshared.bstatistics.domain.object.YoungestTimeRecord(MAX(go.timeAddedRecord))" +
             " FROM GroupInfo go GROUP BY go.group HAVING go.group.groupId = :groupId")
-    Optional<OldestTimeRecord> getOldestTimeOfRecord(String groupId);
+    Optional<YoungestTimeRecord> getOldestTimeOfRecord(String groupId);
 
     @Query("SELECT " +
             " new java.lang.Long(SUM(go.subscribers))" +

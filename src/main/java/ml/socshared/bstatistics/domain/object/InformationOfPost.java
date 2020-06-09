@@ -1,6 +1,7 @@
 package ml.socshared.bstatistics.domain.object;
 
 import lombok.Data;
+import ml.socshared.bstatistics.domain.storage.SocialNetwork;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -13,5 +14,6 @@ public class InformationOfPost {
    Integer likes;
    Integer comments;
    Integer views;
+   SocialNetwork socialNetwork;
    ZonedDateTime time;
 }

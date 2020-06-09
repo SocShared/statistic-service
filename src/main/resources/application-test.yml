@@ -9,6 +9,12 @@ jpa:
     hbm2ddl:
       auto: create
 
+feign:
+  url:
+    auth: ${AUTH_SERVICE:https://auth.socshared.ml}
+    storage: ${STORAGE_SERVICE:https://storage.socshared.ml}
+
+
 service:
   stat:
     kde-h: 0.3337

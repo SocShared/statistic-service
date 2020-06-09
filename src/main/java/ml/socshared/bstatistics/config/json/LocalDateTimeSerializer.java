@@ -20,6 +20,6 @@ public class LocalDateTimeSerializer extends StdSerializer<LocalDateTime> {
 
     @Override
     public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeNumber(value.toEpochSecond(ZoneOffset.UTC));
+        gen.writeNumber(value.toInstant(ZoneOffset.UTC).toEpochMilli());
     }
 }
