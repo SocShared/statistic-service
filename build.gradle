@@ -50,6 +50,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.10.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.10.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.10.5'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     //table processing
     compile group: 'tech.tablesaw', name: 'tablesaw-core', version: '0.38.1'
@@ -62,7 +63,7 @@ dependencies {
     testCompile ('org.junit.jupiter:junit-jupiter-params')
     testRuntime ('org.junit.jupiter:junit-jupiter-engine')
     testCompile ('org.mockito:mockito-junit-jupiter')
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     test.useJUnitPlatform()
 }
 

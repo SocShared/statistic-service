@@ -15,7 +15,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GroupResponse {
 
-    private String groupId;
+    private UUID groupId;
     private SocialNetwork socialNetwork;
     private String name;
     private String vkId;

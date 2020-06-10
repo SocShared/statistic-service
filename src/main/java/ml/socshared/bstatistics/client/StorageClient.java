@@ -24,5 +24,5 @@ public interface StorageClient {
                                                     @RequestHeader("Authorization") String token);
 
     @GetMapping(value = "api/v1/private/groups/{groupId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public GroupResponse findGroupById(@PathVariable UUID groupId, @RequestHeader("Authorization") String token);
+    GroupResponse findGroupById(@PathVariable UUID groupId, @RequestHeader("Authorization") String token);
 }

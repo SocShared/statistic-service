@@ -16,10 +16,10 @@ jpa:
 
 feign:
   url:
-    auth: ${AUTH_SERVICE:https://auth.socshared.ml}
-    storage: ${STORAGE_SERVICE:https://storage.socshared.ml}
+    auth: ${AUTH_SERVICE:localhost:19999}
+    storage: ${STORAGE_SERVICE:localhost:8686}
 
 
 service:
-  news:
-    tracking_num_days: 3
+  tracking_num_days: 3
+  data_page_size_for_step: 100

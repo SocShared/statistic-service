@@ -37,6 +37,10 @@ docker-deply-swarm:
     - echo "POSTGRES_DB=$POSTGRES_DB" >> .env_bstat
     - echo "POSTGRES_HOST=$POSTGRES_HOST" >> .env_bstat
     - echo "SPRING_PROFILE=$SPRING_PROFILE" >> .env_bstat
+    - echo "RABBIT_HOST=rabbitmq" >> .env_bstat
+    - echo "RABBIT_PORT=5672" >> .env_bstat
+    - echo "RABBIT_USER=admin" >> .env_bstat
+    - echo "RABBIT_PASS=2b01db35ec69408aa65276dd710bc99c" >> .env_bstat
     - docker stack deploy -c docker-compose.yaml socshared
 
 

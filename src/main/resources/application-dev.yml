@@ -19,6 +19,7 @@ spring:
 feign:
   url:
     auth: ${AUTH_SERVICE:http://auth-service:9999}
+    storage: ${STORAGE_SERVICE:http://storage-service:8686}
 
 service:
   news:

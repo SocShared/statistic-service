@@ -1,6 +1,7 @@
 package ml.socshared.bstatistics;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +28,13 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -43,78 +47,60 @@ public class ScheduledTask {
     private final StatService service;
     private final  StorageService storageService;
     private final  PostRepository repository;
-    @Value("${service.news.tracking_num_days}")
-    private  Integer trackingNumDays;
+    @Value("${service.tracking_num_days}")
+    private  Integer trackingNumDays = 3;
+    @Value("${service.data_page_size_for_step}")
+    private Integer pageDataSizeForOneStep = 100;
     private final  SentrySender sentrySender;
     private final  RabbitTemplate rabbitTemplate;
-    private final  StorageClient storageClient;
 
-    private  final int delay = 1728000;
+    private  final int delay =60000; //1728000;
     private  final int milli = 1000;
 
-    @Value("#{tokenGetter.tokenStorageService}")
-    private TokenObject storageToken;
+    LocalDateTime beforeDelayStart = LocalDateTime.now().minusMinutes(delay/milli);
 
-    private String authTokenStorage() {
-        return "Bearer " + storageToken.getToken();
-    }
 
 
     @Scheduled(fixedDelay = delay)//28,8 minutes
     public void requestToInitDataCollectionToWorker() {
         log.info("Run scheduled operation: request to initialize operation of collection data of group in Service Worker");
-//        try {
-//            Map<UUID, Pair<String, SocialNetwork> > groupIds = new HashMap<>();
-//            RestResponsePage<PublicationResponse> publications = storageClient.findPostAfterDate(
-//                    ZonedDateTime.now(ZoneOffset.UTC).minusSeconds(delay/milli).toInstant().toEpochMilli(),
-//                    0, 100, authTokenStorage());
-//            int i = 1;
-//            do{
-//                for(PublicationResponse p : publications) {
-//                    Post target = new Post();
-//                    for(GroupPostStatus status : p.getPostStatus()) {
-//                        Pair<String, SocialNetwork> groupId = groupIds.getOrDefault(status.getGroupId(), null);
-//                        if(groupId == null) {
-//                            GroupResponse g = storageClient.findGroupById(status.getGroupId(), authTokenStorage());
-//
-//                        }
-//                    }
-//                }
-//
-//                i++;
-//            } while(i < publications.getTotalPages());
-//            List<Post> tps = repository.findRecordAddedAfter(Util.timeUtc().minusDays(trackingNumDays));
-//            ObjectMapper mapper = new ObjectMapper();
-//            groupIds = new HashSet<>();
-//            for(Post target : tps) {
-//                if(!groupIds.contains(target.getGroupId())) {
-//                    groupIds.add(target.getGroupId());
-//                    RabbitMqSocialRequest groupRequest = new RabbitMqSocialRequest();
-//                    groupRequest.setType(RabbitMqType.GROUP);
-//                    groupRequest.setGroupId(target.getGroupId());
-//                    groupRequest.setSystemUserId(target.getSystemUserId());
-//                    String serialize = mapper.writeValueAsString(groupRequest);
-//                    rabbitTemplate.convertAndSend(RabbitMQConfig.BSTAT_REQUEST_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY,
-//                                                    serialize);
-//                }
-//
-//                RabbitMqSocialRequest postRequest = new RabbitMqSocialRequest();
-//                postRequest.setType(RabbitMqType.POST);
-//                postRequest.setSystemUserId(target.getSystemUserId());
-//                postRequest.setGroupId(target.getGroupId());
-//                postRequest.setPostId(target.getPostId());
-//                postRequest.setSocialNetwork(target.getSocialNetwork());
-//                String serialize = mapper.writeValueAsString(postRequest);
-//                rabbitTemplate.convertAndSend(RabbitMQConfig.BSTAT_REQUEST_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY,
-//                        serialize);
-//            }
-//        } catch (Exception exp) {
-//            log.warn("Oops! Something went wrong..." + exp.getMessage());
-//        }
-//
-//        sentrySender.sentryMessage("Scheduled  task: Initialization of the collection of statistics from social networks",
-//                Collections.emptyMap(), Collections.singletonList(SentryTag.ScheduledStatisticCollection));
+       try {
+           LocalDateTime beforeStart = beforeDelayStart;
+           beforeDelayStart = LocalDateTime.now();
+           storageService.storageLoadPostNotOlderThat(beforeStart);
+           Page<Post> postsPage = null;
+           ObjectMapper mapper = new ObjectMapper();
+           int i = 0;
+           do {
+               postsPage = storageService.getPostNotOlderThat(beforeStart, PageRequest.of(i, pageDataSizeForOneStep));
+               Set<Pair<String, SocialNetwork>> groupIds = new HashSet<>();
+               for (Post el : postsPage) {
+                   RabbitMqSocialRequest request = new RabbitMqSocialRequest();
+                   request.setSocialNetwork(el.getGroup().getSocialNetwork());
+                   request.setGroupId(el.getGroup().getSocialId());
+                   request.setPostId(el.getSocId());
+                   request.setType(RabbitMqType.POST);
+                   request.setSystemUserId(el.getGroup().getSystemUserId());
+                   String serialized = mapper.writeValueAsString(request);
+                   rabbitTemplate.convertAndSend(RabbitMQConfig.BSTAT_REQUEST_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialized);
+                   Pair<String, SocialNetwork> groupId = Pair.of(el.getGroup().getSocialId(), el.getGroup().getSocialNetwork());
+                   if(!groupIds.contains(groupId)) {
+                       groupIds.add(groupId);
+                       request.setType(RabbitMqType.GROUP);
+                       serialized = mapper.writeValueAsString(request);
+                       rabbitTemplate.convertAndSend(RabbitMQConfig.BSTAT_REQUEST_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialized);
+                   }
+               }
+               i++;
+           } while (i < postsPage.getTotalPages());
 
+//           sentrySender.sentryMessage("Scheduled  task: Initialization of the collection of statistics from social networks",
+//                   Collections.emptyMap(), Collections.singletonList(SentryTag.ScheduledStatisticCollection));
+
+       } catch (JsonProcessingException e) {
+           log.error(e.getMessage());
+           e.printStackTrace();
+       }
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_BSTAT_RESPONSE_NAME)

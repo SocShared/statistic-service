@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +19,7 @@ import java.util.UUID;
 public interface PostRepository extends CrudRepository<Post, UUID> {
 
     @Query("SELECT tp FROM Post tp  WHERE tp.dateAddingRecord >= :dateAddingAfter")
-    Page<Post> findRecordAddedAfter(@Param("dateAddingAfter") ZonedDateTime dateAdding, Pageable pageable);
+    Page<Post> findRecordAddedAfter(@Param("dateAddingAfter") LocalDateTime dateAdding, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.group.socialId = :socGroupId AND p.group.socialNetwork = :soc " +
             " AND p.socId = :socPostId ")

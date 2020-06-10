@@ -20,17 +20,17 @@ public class Config{
 
 
 
-    @Bean
-    ObjectMapper getJacksonMapperBuilder() {
-        SimpleModule timeModule = new SimpleModule("timeModule");
-        timeModule.addSerializer(new ZonedDateTimeSerializer());
-        timeModule.addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
-        timeModule.addSerializer(new LocalDateSerializer());
-        timeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer());
-        timeModule.addSerializer(new LocalDateTimeSerializer());
-        timeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer());
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(timeModule);
-        return mapper;
-    }
+//    @Bean
+//    ObjectMapper getJacksonMapperBuilder() {
+//        SimpleModule timeModule = new SimpleModule("timeModule");
+//        timeModule.addSerializer(new ZonedDateTimeSerializer());
+//        timeModule.addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
+//        timeModule.addSerializer(new LocalDateSerializer());
+//        timeModule.addDeserializer(LocalDate.class, new LocalDateDeserializer());
+//        timeModule.addSerializer(new LocalDateTimeSerializer());
+//        timeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer());
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.registerModule(timeModule);
+//        return mapper;
+//    }
 }

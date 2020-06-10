@@ -79,7 +79,8 @@ public class TokenGetter {
         return tokenBSTAT;
     }
 
-    @Before("execution(* ml.socshared.bstatistics.ScheduledTask.*(..))")
+
+    @Before("execution(* ml.socshared.bstatistics.service.impl.StorageServiceImpl.*(..))")
     public TokenObject initTokenStorageService() {
         if (tokenStorageService != null && jwtTokenProvider.validateServiceToken(tokenStorageService.getToken())) {
             return tokenStorageService;

@@ -21,6 +21,7 @@ import ml.socshared.bstatistics.service.sentry.SentrySender;
 import ml.socshared.bstatistics.service.sentry.SentryTag;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.*;
 import java.util.*;
 import java.util.function.BinaryOperator;
@@ -248,6 +249,7 @@ public class StatServiceImpl implements StatService {
      * @throws HttpIllegalBodyRequest если в базе данных содержится более свежая запись чем переданная. Определяется через поле time
      */
     @Override
+    @Transactional
     public void updateInformationOfPost(RabbitMqResponseAll data) {
        //checking data
             if( data.getViewsCount() != null && data.getViewsCount() < 0) {
@@ -281,14 +283,15 @@ public class StatServiceImpl implements StatService {
             newPostInfo.setDateAddedRecord(Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime());
             postInfoRep.save(newPostInfo);
 
-
-        Map<String, Object> additional = new HashMap<>();
-        additional.put("post_ids", new SentryPostId(data.getGroupId(), data.getPostId()));
-        sentrySender.sentryMessage("update information of posts", additional,
-                Collections.singletonList(SentryTag.PostUpdate));
+//
+//        Map<String, Object> additional = new HashMap<>();
+//        additional.put("post_ids", new SentryPostId(data.getGroupId(), data.getPostId()));
+//        sentrySender.sentryMessage("update information of posts", additional,
+//                Collections.singletonList(SentryTag.PostUpdate));
     }
 
     @Override
+    @Transactional
     public void updateInformationOfGroup(RabbitMqResponseAll data) {
         LocalDateTime request_data =  Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime();
         Optional<YoungestTimeRecord> record = groupInfoRep.getYoungestTimeOfRecordBySocialId(data.getGroupId(), data.getSocialNetwork());

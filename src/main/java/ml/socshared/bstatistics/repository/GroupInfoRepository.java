@@ -24,7 +24,7 @@ public interface GroupInfoRepository extends CrudRepository<GroupInfo, Integer>{
     @Query("SELECT " +
                 " new ml.socshared.bstatistics.domain.object.YoungestTimeRecord(MAX(go.timeAddedRecord))" +
             " FROM GroupInfo go GROUP BY go.group.socialId, go.group.socialNetwork " +
-            " HAVING go.group.socialId = :groupId AND go.group.socialId = :soc ")
+            " HAVING go.group.socialId = :groupId AND go.group.socialNetwork = :soc ")
     Optional<YoungestTimeRecord> getYoungestTimeOfRecordBySocialId(String groupId, SocialNetwork soc);
 
 //    @Query("SELECT " +
