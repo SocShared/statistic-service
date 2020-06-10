@@ -1,6 +1,8 @@
 spring:
   profiles:
     active: ${SPRING_PROFILE:test}
+  application:
+    name: socshared-bstat-service
 
 jwt:
   secret: ${SECRET_JWT_KEY:mWDDrMHQ+QJcTnE+afpVz76HrKkGoKQZHnubc52bYN3/bECi32YNjVbR6EDs6BQsveUIh44ubwcktdPc7Sm9Tg==}
