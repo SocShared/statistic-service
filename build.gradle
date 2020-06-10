@@ -74,7 +74,7 @@ bootJar {
 }
 
 springBoot {
-    mainClassName = 'ml.socshared.bstatistics.Main'
+    mainClassName = 'ml.socshared.Main'
 }
 
 test {
