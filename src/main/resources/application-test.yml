@@ -8,6 +8,11 @@ jpa:
     dialect: org.hibernate.dialect.H2Dialect
     hbm2ddl:
       auto: create
+    rabbitmq:
+      host: ${RABBIT_HOST:localhost} # RabbitMQ host.
+      password: ${RABBIT_PASS:mqadmin} # Login to authenticate against the broker.
+      port: ${RABBIT_PORT:5672} # RabbitMQ port.
+      username: ${RABBIT_USER:mqadmin} # Login user to authenticate to the broker.
 
 feign:
   url:
@@ -16,9 +21,5 @@ feign:
 
 
 service:
-  stat:
-    kde-h: 0.3337
-    kde_estimate_size: 200
   news:
     tracking_num_days: 3
-    number_of_checks_per_day: 50

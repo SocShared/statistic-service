@@ -1,4 +1,4 @@
-package ml.socshared.security.model;
+package ml.socshared.bstatistics.security.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;

@@ -2,27 +2,25 @@ package ml.socshared.bstatistics.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ml.socshared.bstatistics.config.Constants;
-import ml.socshared.bstatistics.domain.db.*;
+import ml.socshared.bstatistics.domain.db.GroupTable;
+import ml.socshared.bstatistics.domain.db.GroupInfo;
+import ml.socshared.bstatistics.domain.db.Post;
+import ml.socshared.bstatistics.domain.db.PostInfo;
 import ml.socshared.bstatistics.domain.object.*;
-import ml.socshared.bstatistics.domain.rabbitmq.response.RabbitMqPostResponse;
 import ml.socshared.bstatistics.domain.rabbitmq.response.RabbitMqResponseAll;
+import ml.socshared.bstatistics.domain.response.GroupInfoResponse;
 import ml.socshared.bstatistics.domain.storage.SocialNetwork;
 import ml.socshared.bstatistics.exception.HttpIllegalBodyRequest;
 import ml.socshared.bstatistics.exception.HttpNotFoundException;
 import ml.socshared.bstatistics.repository.GroupInfoRepository;
 import ml.socshared.bstatistics.repository.GroupRepository;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
+import ml.socshared.bstatistics.repository.PostRepository;
 import ml.socshared.bstatistics.service.StatService;
 import ml.socshared.bstatistics.service.sentry.SentrySender;
 import ml.socshared.bstatistics.service.sentry.SentryTag;
-import net.bytebuddy.dynamic.scaffold.MethodGraph;
-import org.hibernate.validator.internal.util.privilegedactions.LoadClass;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tech.tablesaw.api.*;
 
-import javax.swing.text.html.Option;
 import java.time.*;
 import java.util.*;
 import java.util.function.BinaryOperator;
@@ -39,6 +37,7 @@ public class StatServiceImpl implements StatService {
     private final GroupInfoRepository groupInfoRep;
     private final GroupRepository groupRep;
     private final PostInfoRepository postInfoRep;
+    private final PostRepository postRep;
     private final SentrySender sentrySender;
 
 
@@ -53,23 +52,69 @@ public class StatServiceImpl implements StatService {
      * @param end конец периода
      * @return времянной ряд
      */
+//    @Override
+//    public TimeSeries<Integer> getOnlineByTime(String groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
+//        Util.checkDate(begin, end);
+//        List<GroupInfo> giList = groupInfoRep.findBetweenDates(groupId, soc, LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MIDNIGHT));
+//        if (giList.isEmpty()) {
+//            throw new HttpNotFoundException("Not found information on group by set period");
+//        }
+//
+//
+//
+//        TimeSeries<Integer> res = new TimeSeries<>();
+//        res.setData(data);
+//        res.setStep((begin.until(end).getDays() != 0 )? Duration.ofDays(1) : Duration.ofDays(1).dividedBy(Constants.NEWS_NUM_CHECK_PER_DAY));
+//        res.setBegin(begin);
+//        res.setEnd(end);
+//        res.setSize(data.size());
+//
+//        Map<String, Object> additional = new HashMap<>();
+//        additional.put("group_id", groupId);
+//        additional.put("time_begin", begin);
+//        additional.put("time_end", end);
+//        sentrySender.sentryMessage("get time series of group", additional,
+//                Collections.singletonList(SentryTag.GroupOnline));
+//
+//        return res;
+//    }
+
     @Override
-    public TimeSeries<Integer> getOnlineByTime(String groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
+    public GroupInfoResponse getGroupInfoByTime(String groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
         Util.checkDate(begin, end);
-        List<GroupInfo> giList = groupInfoRep.findBetweenDates(groupId, begin, end);
+        List<GroupInfo> giList = groupInfoRep.findBySocialIdBetweenDates(groupId, soc, LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MIDNIGHT));
         if (giList.isEmpty()) {
             throw new HttpNotFoundException("Not found information on group by set period");
         }
-       List<Integer> data = applyGroupValuesByDay(giList, GroupInfo::getOnline, Integer::sum, ()->0,
-                                                  GroupInfo::getTimeAddedRecord, begin, end);
 
+        List<TimePoint<Integer>> gonline = new LinkedList<>();
+        List<TimePoint<Integer>> gsubscribers = new LinkedList();
+        Long time = null;
+        for(GroupInfo info : giList) {
+             time = info.getTimeAddedRecord().toInstant(ZoneOffset.UTC).toEpochMilli();
+            gonline.add(new TimePoint<>(info.getOnline(), time));
+            gsubscribers.add(new TimePoint<>(info.getSubscribers(), time));
+        }
 
-        TimeSeries<Integer> res = new TimeSeries<>();
-        res.setData(data);
-        res.setStep((begin.until(end).getDays() != 0 )? Duration.ofDays(1) : Duration.ofDays(1).dividedBy(Constants.NEWS_NUM_CHECK_PER_DAY));
-        res.setBegin(begin);
-        res.setEnd(end);
-        res.setSize(data.size());
+        TimeSeries<TimePoint<Integer>> series_online = new TimeSeries<>();
+        LocalDate time_end = Instant.ofEpochMilli(time).atZone(ZoneOffset.UTC).toLocalDate();
+        LocalDate time_begin = giList.get(0).getTimeAddedRecord().toLocalDate();
+        series_online.setSize(gonline.size());
+        series_online.setData(gonline);
+        series_online.setBegin(time_begin);
+        series_online.setEnd(time_end);
+
+        TimeSeries<TimePoint<Integer>> series_subscribers = new TimeSeries<>();
+        series_subscribers.setSize(gsubscribers.size());
+        series_subscribers.setData(gsubscribers);
+        series_subscribers.setBegin(time_begin);
+        series_subscribers.setEnd(time_end);
+
+        GroupInfoResponse response = new GroupInfoResponse();
+        response.setGroupId(groupId);
+        response.setSocialNetwork(soc);
+        response.setOnline(series_online);
+        response.setSubscribers(series_subscribers);
 
         Map<String, Object> additional = new HashMap<>();
         additional.put("group_id", groupId);
@@ -78,7 +123,7 @@ public class StatServiceImpl implements StatService {
         sentrySender.sentryMessage("get time series of group", additional,
                 Collections.singletonList(SentryTag.GroupOnline));
 
-        return res;
+        return response;
     }
 
 
@@ -220,15 +265,20 @@ public class StatServiceImpl implements StatService {
 
 
             PostInfo newPostInfo = new PostInfo();
-            newPostInfo.setGroupId(data.getGroupId());
-            newPostInfo.setPostId(data.getPostId());
-            newPostInfo.setSocialNetwork(data.getSocialNetwork());
+            Optional<Post> postOptional = postRep.findBySocial(data.getGroupId(), data.getPostId(),
+                                                               data.getSocialNetwork());
+            if(postOptional.isEmpty()) {
+                log.error("Internal Server Error. Post by social (groupId: {}, postId: {}, soc: {}) not found in db",
+                        data.getGroupId(), data.getPostId(), data.getSocialNetwork());
+                return;
+            }
+            Post post = postOptional.get();
+            newPostInfo.setPost(post);
             newPostInfo.setViews(data.getViewsCount());
             newPostInfo.setComments(data.getCommentsCount());
             newPostInfo.setShare(data.getRepostsCount());
             newPostInfo.setLikes(data.getLikesCount());
             newPostInfo.setDateAddedRecord(Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime());
-            newPostInfo.setSocialNetwork(data.getSocialNetwork());
             postInfoRep.save(newPostInfo);
 
 
@@ -240,8 +290,28 @@ public class StatServiceImpl implements StatService {
 
     @Override
     public void updateInformationOfGroup(RabbitMqResponseAll data) {
+        LocalDateTime request_data =  Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime();
+        Optional<YoungestTimeRecord> record = groupInfoRep.getYoungestTimeOfRecordBySocialId(data.getGroupId(), data.getSocialNetwork());
+        if(record.isPresent()) {
+            if(record.get().getTime().isAfter(request_data) ||record.get().getTime().isEqual(request_data)) {
+                log.error("Invalid information. Time point must be more time point from db; -> {}", data);
+                return;
+            }
+        }
 
+        GroupInfo info = new GroupInfo();
+        Optional<GroupTable> groupOptional = groupRep.findBySocial(data.getGroupId(), data.getSocialNetwork());
+        if(groupOptional.isEmpty()) {
+            log.error("Internal server error, for group not found systemId; -> {}", data);
+            return;
+        }
+        GroupTable group = groupOptional.get();;
+        info.setGroup(group);
+        info.setOnline(data.getMembersOnline());
+        info.setSubscribers(data.getMembersCount());
+        info.setTimeAddedRecord(request_data);
 
+        groupInfoRep.save(info);
     }
 
 
@@ -382,13 +452,19 @@ public class StatServiceImpl implements StatService {
         return data;
     }
 
-    @Override
-    public Group getGroupSubscribers(String groupId, SocialNetwork soc) {
-        Optional<Group> g = groupRep.findById(groupId);
-        if(g.isEmpty()) {
-            throw new HttpNotFoundException("Information about group (id: " + groupId + ") not found");
-        }
-        return g.get();
-    }
+//    @Override
+//    @Transactional
+//    public GroupInfo getGroupSubscribers(String groupId, SocialNetwork soc) {
+//        Optional<YoungestTimeRecord> g = groupInfoRep.getYoungestTimeOfRecord(groupId, soc);
+//        if(g.isEmpty()) {
+//            throw new HttpNotFoundException("Information about group (id: " + groupId + ") not found");
+//        }
+//        List<GroupInfo> groups = groupInfoRep.findBetweenDates(groupId, soc, g.get().getTime(), g.get().getTime());
+//        if(groups.size() != 1) {
+//            log.error("Error state in data base");
+//            throw new HttpNotFoundException("Information about group (id: " + groupId + ") not found");
+//        }
+//        return groups.get(0);
+//    }
 
 }

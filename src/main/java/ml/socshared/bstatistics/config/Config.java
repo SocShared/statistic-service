@@ -18,20 +18,7 @@ import java.time.ZonedDateTime;
 @EnableJpaRepositories("ml.socshared.bstatistics.repository")
 public class Config{
 
-    @Bean
-    ServiceWorkerClient getServiceWorkerClient() {
-        return new ServiceWorkerClientMOCK();
-    }
 
-    @Bean
-    Integer getConstKdeEstimateSize() {
-        return Constants.STAT_KDE_ESTIMATE_SIZE;
-    }
-
-    @Bean
-    Integer getConstTrackingNewsNumDays() {
-        return Constants.NEWS_TRACKING_NUM_DAYS;
-    }
 
     @Bean
     ObjectMapper getJacksonMapperBuilder() {

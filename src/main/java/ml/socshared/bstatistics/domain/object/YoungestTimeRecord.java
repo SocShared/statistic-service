@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 
 public class YoungestTimeRecord {
     LocalDateTime time;
+
     public YoungestTimeRecord(LocalDateTime t) {
         time = t;
     }

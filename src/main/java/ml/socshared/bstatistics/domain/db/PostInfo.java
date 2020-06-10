@@ -25,12 +25,8 @@ public class PostInfo {
     @GeneratedValue
     @Column(name="id")
     Integer id;
-    @Column(name="group_id", nullable = false)
-    String groupId;
-    @Column(name="post_id", nullable = false)
-    String postId;
-    @Column(name = "social_network")
-    SocialNetwork socialNetwork;
+    @ManyToOne(cascade = CascadeType.ALL)
+    Post post;
     @Column(name="date_added_record", nullable = false)
     LocalDateTime dateAddedRecord;
     Integer views;

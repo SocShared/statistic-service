@@ -1,4 +1,4 @@
-package ml.socshared.security.jwt;
+package ml.socshared.bstatistics.security.jwt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

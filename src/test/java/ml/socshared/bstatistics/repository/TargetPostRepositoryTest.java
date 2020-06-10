@@ -1,30 +1,7 @@
 package ml.socshared.bstatistics.repository;
 
-import lombok.extern.slf4j.Slf4j;
-import ml.socshared.bstatistics.AbstractIntegrationTest;
-import ml.socshared.bstatistics.domain.db.TargetPost;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 //import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.Resource;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 //
 //@DataJpaTest

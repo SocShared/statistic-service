@@ -1,4 +1,4 @@
-package ml.socshared.security.request;
+package ml.socshared.bstatistics.security.request;
 
 import lombok.Getter;
 import lombok.Setter;
