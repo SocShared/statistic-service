@@ -36,7 +36,8 @@ dependencies {
     //sentry
     implementation 'io.sentry:sentry-spring:1.7.23'
     implementation 'io.sentry:sentry:1.7.23'
-
+    //actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     //Logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '2.2.5.RELEASE'
     //DataBases

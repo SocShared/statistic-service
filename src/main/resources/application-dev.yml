@@ -24,3 +24,10 @@ feign:
 service:
   news:
     tracking_num_days: 3
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: auditevents, beans, caches, conditions, configprops, health, httptrace, info, loggers, metrics, mappings, shutdown

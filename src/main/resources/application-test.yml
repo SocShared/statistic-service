@@ -21,5 +21,14 @@ feign:
 
 
 service:
+
   tracking_num_days: 3
   data_page_size_for_step: 100
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: auditevents, beans, caches, conditions, configprops, health, httptrace, info, loggers, metrics, mappings, shutdown
+
