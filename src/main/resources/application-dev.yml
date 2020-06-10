@@ -25,8 +25,8 @@ spring:
 
 feign:
   url:
-    auth: ${AUTH_SERVICE:https://auth-service:9999}
-    storage: ${STORAGE_SERVICE:https://storage-service:8686}
+    auth: ${AUTH_SERVICE:http://auth-service:9999}
+    storage: ${STORAGE_SERVICE:http://storage-service:8686}
 
 service:
   tracking_num_days: 3
