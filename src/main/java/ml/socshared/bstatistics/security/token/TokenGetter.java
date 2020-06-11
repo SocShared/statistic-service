@@ -80,7 +80,7 @@ public class TokenGetter {
     }
 
 
-    @Before("execution(* ml.socshared.bstatistics.service.impl.StorageServiceImpl.*(..))")
+    @Before("execution(* ml.socshared.bstatistics.service.impl.StorageServiceImpl.storageLoadPostNotOlderThat(..))")
     public TokenObject initTokenStorageService() {
         if (tokenStorageService != null && jwtTokenProvider.validateServiceToken(tokenStorageService.getToken())) {
             return tokenStorageService;

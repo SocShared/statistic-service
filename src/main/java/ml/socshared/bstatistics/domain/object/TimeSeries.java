@@ -15,5 +15,4 @@ import java.time.LocalDate;
 public class TimeSeries<T> extends DataList<T> {
     LocalDate begin;
     LocalDate end;
-    Duration step;
 }

@@ -85,6 +85,7 @@ public class StorageServiceImpl implements StorageService {
             }
             i++;
         } while(i < posts.getTotalPages());
+        log.info("Received {} posts from storage service", posts.getTotalElements());
     }
 
     public Page<Post> getPostNotOlderThat(LocalDateTime time, Pageable pageable) {
