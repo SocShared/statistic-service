@@ -11,6 +11,8 @@ import java.util.UUID;
 public class RabbitMqResponseAll {
     RabbitMqType type;
     UUID systemUserId;
+    UUID systemGroupId;
+    UUID systemPostId;
     String groupId;
     String postId;
     SocialNetwork socialNetwork;

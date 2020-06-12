@@ -12,20 +12,21 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface GroupInfoRepository extends CrudRepository<GroupInfo, Integer>{
 
-    @Query("SELECT gi FROM GroupInfo gi WHERE (gi.group.socialId = :groupId) AND  (gi.group.socialNetwork = :soc) AND " +
+    @Query("SELECT gi FROM GroupInfo gi WHERE (gi.group.systemGroupId = :groupId) AND  (gi.group.socialNetwork = :soc) AND " +
             " (gi.timeAddedRecord >= :begin) AND (gi.timeAddedRecord <= :end) ")
-    List<GroupInfo> findBySocialIdBetweenDates(@Param("groupId")String groupId, SocialNetwork soc, @Param("begin") LocalDateTime begin,
-                                     @Param("end") LocalDateTime end);
+    List<GroupInfo> findBySocialIdBetweenDates(@Param("groupId") UUID groupId, SocialNetwork soc, @Param("begin") LocalDateTime begin,
+                                               @Param("end") LocalDateTime end);
 
     @Query("SELECT " +
                 " new ml.socshared.bstatistics.domain.object.YoungestTimeRecord(MAX(go.timeAddedRecord))" +
-            " FROM GroupInfo go GROUP BY go.group.socialId, go.group.socialNetwork " +
-            " HAVING go.group.socialId = :groupId AND go.group.socialNetwork = :soc ")
-    Optional<YoungestTimeRecord> getYoungestTimeOfRecordBySocialId(String groupId, SocialNetwork soc);
+            " FROM GroupInfo go GROUP BY go.group.systemGroupId, go.group.socialNetwork " +
+            " HAVING go.group.systemGroupId = :groupId AND go.group.socialNetwork = :soc ")
+    Optional<YoungestTimeRecord> getYoungestTimeOfRecordBySocialId(UUID groupId, SocialNetwork soc);
 
 //    @Query("SELECT " +
 //            " new java.lang.Long(SUM(go.subscribers))" +

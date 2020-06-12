@@ -12,20 +12,21 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Repository
 public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
 
-    @Query("SELECT pi FROM PostInfo pi WHERE (pi.post.group.socialId = :groupId) AND (pi.post.socId = :postId) " +
+    @Query("SELECT pi FROM PostInfo pi WHERE (pi.post.group.systemGroupId = :groupId) AND (pi.post.socId = :postId) " +
             "AND (pi.post.group.socialNetwork = :soc)")
-    List<PostInfo> findPostInfoByGroupIdAndPostId(String groupId, String postId, SocialNetwork soc);
+    List<PostInfo> findPostInfoByGroupIdAndPostId(UUID groupId, String postId, SocialNetwork soc);
 
     @Query(" Select info FROM PostInfo info " +
-            " WHERE (info.post.group.socialId = :groupId and info.post.socId = :postId and info.post.group.socialNetwork = :soc) and " +
+            " WHERE (info.post.group.systemGroupId = :groupId and info.post.systemPostId = :postId and info.post.group.socialNetwork = :soc) and " +
             " (info.dateAddedRecord >= :begin and info.dateAddedRecord <= :end) ")
-    List<PostInfo> findPostInfoByPeriod(String groupId,
-                                        String postId,
+    List<PostInfo> findPostInfoByPeriod(UUID groupId,
+                                        UUID postId,
                                         SocialNetwork soc,
                                         LocalDateTime begin,
                                         LocalDateTime end);
@@ -33,7 +34,7 @@ public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
     @Query("SELECT " +
             " new ml.socshared.bstatistics.domain.object.YoungestTimeRecord(MAX(pi.dateAddedRecord)) " +
             " FROM  PostInfo pi " +
-            " GROUP BY pi.post.socId, pi.post.group.socialId, pi.post.group.socialNetwork " +
-            " HAVING pi.post.group.socialId = :groupId and pi.post.socId = :postId and pi.post.group.socialNetwork = :soc")
-    Optional<YoungestTimeRecord> getTimeOfYoungestRecord(String groupId, String postId, SocialNetwork soc);
+            " GROUP BY pi.post.socId, pi.post.group.systemGroupId, pi.post.group.socialNetwork " +
+            " HAVING pi.post.group.systemGroupId = :groupId and pi.post.socId = :postId and pi.post.group.socialNetwork = :soc")
+    Optional<YoungestTimeRecord> getTimeOfYoungestRecord(UUID groupId, UUID postId, SocialNetwork soc);
 }

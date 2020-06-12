@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/")
@@ -46,7 +47,7 @@ public class BStatisticController implements BStatisticApi {
     @Override
     @PreAuthorize("hasRole('SERVICE')")
     @GetMapping("private/social/{soc}/groups/{groupId}/subscribers/variability")
-    public TimeSeries<Integer> getVariabilitySubscribersOfGroup(@PathVariable String groupId,
+    public TimeSeries<Integer> getVariabilitySubscribersOfGroup(@PathVariable UUID groupId,
                                                                 @PathVariable SocialNetwork soc,
                                                                 @RequestParam Long begin,
                                                                 @RequestParam Long end) {
@@ -66,25 +67,25 @@ public class BStatisticController implements BStatisticApi {
 
     @Override
     @PreAuthorize("hasRole('SERVICE')")
-    @GetMapping("private/social/{soc}/groups/{groupId}/posts/{postId}/time_series")
-    public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable String groupId,
-                                                         @PathVariable String postId,
+    @GetMapping("private/social/{soc}/groups/{systemGroupId}/posts/{sytemPostId}/time_series")
+    public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable UUID systemGroupId,
+                                                         @PathVariable UUID systemPostId,
                                                          @PathVariable SocialNetwork soc,
                                                          @RequestParam(name="begin") Long begin,
                                                          @RequestParam(name="end") Long end) {
-        log.info("request on get info by time of post (GroupId: " + groupId + "; PostId: " + postId + ")");
-        return service.getPostInfoByTime(groupId, postId, soc,LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
+        log.info("request on get info by time of post (Social: {}; GroupId: {}; PostId: {})", soc, systemGroupId, systemPostId);
+        return service.getPostInfoByTime(systemGroupId, systemPostId, soc,LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
                 LocalDate.ofInstant(Instant.ofEpochSecond( end), ZoneOffset.UTC));
     }
 
 
     @PreAuthorize("hasRole('SERVICE')")
     @GetMapping("private/social/{soc}/groups/{groupId}/info")
-    public GroupInfoResponse getGroupInfo(@PathVariable String groupId, @PathVariable SocialNetwork soc,
+    public GroupInfoResponse getGroupInfo(@PathVariable UUID systemGroupId, @PathVariable SocialNetwork soc,
                                           @RequestParam(name = "begin") Long begin,
                                           @RequestParam(name = "end") Long end) {
         log.info("request to get group info");
-        return service.getGroupInfoByTime(groupId, soc, Instant.ofEpochSecond(begin).atZone(ZoneOffset.UTC).toLocalDate(),
+        return service.getGroupInfoByTime(systemGroupId, soc, Instant.ofEpochSecond(begin).atZone(ZoneOffset.UTC).toLocalDate(),
                                           Instant.ofEpochSecond(end).atZone(ZoneOffset.UTC).toLocalDate());
 
     }
@@ -92,10 +93,10 @@ public class BStatisticController implements BStatisticApi {
     @Override
     @PreAuthorize("hasRole('SERVICE')")
     @GetMapping("private/social/{soc}/groups/{groupId}/posts/{postId}/summary")
-    public PostSummary getPostInfo(@PathVariable String groupId, @PathVariable String postId,
+    public PostSummary getPostInfo(@PathVariable UUID systemGroupId, @PathVariable UUID systemPostId,
                                    @PathVariable SocialNetwork soc) {
-        log.info("request on get info of post (GroupId: " + groupId + "; PostId: " + postId + ")");
-        return service.getPostSummary(groupId, postId, soc);
+        log.info("request on get info of post (SocialNetwork: {}; GroupId: {}; PostId: {})", soc, systemGroupId, systemPostId);
+        return service.getPostSummary(systemPostId, systemGroupId, soc);
     }
 
     @Override

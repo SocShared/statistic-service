@@ -81,7 +81,7 @@ public class StatServiceImpl implements StatService {
 //    }
 
     @Override
-    public GroupInfoResponse getGroupInfoByTime(String groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
+    public GroupInfoResponse getGroupInfoByTime(UUID groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
         Util.checkDate(begin, end);
         List<GroupInfo> giList = groupInfoRep.findBySocialIdBetweenDates(groupId, soc, LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MIDNIGHT));
         if (giList.isEmpty()) {
@@ -112,13 +112,14 @@ public class StatServiceImpl implements StatService {
         series_subscribers.setEnd(time_end);
 
         GroupInfoResponse response = new GroupInfoResponse();
-        response.setGroupId(groupId);
+        response.setSystemGroupId(groupId);
         response.setSocialNetwork(soc);
         response.setOnline(series_online);
         response.setSubscribers(series_subscribers);
 
         Map<String, Object> additional = new HashMap<>();
-        additional.put("group_id", groupId);
+        additional.put("system_group_id", groupId);
+        additional.put("social_network", soc);
         additional.put("time_begin", begin);
         additional.put("time_end", end);
         sentrySender.sentryMessage("get time series of group", additional,
@@ -173,7 +174,7 @@ public class StatServiceImpl implements StatService {
 
 
     @Override
-    public PostInfoByTime getPostInfoByTime(String groupId, String postId, SocialNetwork soc, LocalDate begin, LocalDate end) {
+    public PostInfoByTime getPostInfoByTime(UUID groupId, UUID postId, SocialNetwork soc, LocalDate begin, LocalDate end) {
         List<PostInfo> res =  postInfoRep.findPostInfoByPeriod(groupId, postId, soc, LocalDateTime.of(begin, LocalTime.MIN),LocalDateTime.of(end,LocalTime.MIDNIGHT) );
         PostInfoByTime response = new PostInfoByTime();
         if(res.isEmpty()) {
@@ -193,8 +194,8 @@ public class StatServiceImpl implements StatService {
             likes.add(new TimePoint<>( info.getLikes(), info.getDateAddedRecord().toInstant(ZoneOffset.UTC).toEpochMilli()));
             comments.add(new TimePoint<>( info.getComments(), info.getDateAddedRecord().toInstant(ZoneOffset.UTC).toEpochMilli()));
         }
-        response.setGroupId(groupId);
-        response.setPostId(postId);
+        response.setSystemGroupId(groupId);
+        response.setSystemPostId(postId);
         response.setBegin(res.get(0).getDateAddedRecord());
         response.setEnd(res.get(res.size()-1).getDateAddedRecord());
         response.setVariabilityNumberViews(new DataList<>(views.size(), views));
@@ -212,7 +213,7 @@ public class StatServiceImpl implements StatService {
      * @return сумарные показатели
      */
     @Override
-    public PostSummary getPostSummary(String groupId, String postId, SocialNetwork  soc) {
+    public PostSummary getPostSummary(UUID groupId, UUID postId, SocialNetwork  soc) {
         Optional<YoungestTimeRecord> record = postInfoRep.getTimeOfYoungestRecord(groupId, postId, soc);
         if(record.isEmpty()) {
             throw new HttpNotFoundException("Not found information by post (GroupId: "
@@ -222,8 +223,8 @@ public class StatServiceImpl implements StatService {
                 record.get().getTime(), record.get().getTime());
         PostInfo post = postsList.get(0);
         PostSummary res = new PostSummary();
-        res.setGroupId(groupId);
-        res.setPostId(postId);
+        res.setSystemGroupId(groupId);
+        res.setSystemPostId(postId);
         res.setNumberComments(post.getComments());
         res.setNumberLikes(post.getLikes());
         res.setNumberReposts(post.getShare());
@@ -294,7 +295,7 @@ public class StatServiceImpl implements StatService {
     @Transactional
     public void updateInformationOfGroup(RabbitMqResponseAll data) {
         LocalDateTime request_data =  Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime();
-        Optional<YoungestTimeRecord> record = groupInfoRep.getYoungestTimeOfRecordBySocialId(data.getGroupId(), data.getSocialNetwork());
+        Optional<YoungestTimeRecord> record = groupInfoRep.getYoungestTimeOfRecordBySocialId(data.getSystemGroupId(), data.getSocialNetwork());
         if(record.isPresent()) {
             if(record.get().getTime().isAfter(request_data) ||record.get().getTime().isEqual(request_data)) {
                 log.error("Invalid information. Time point must be more time point from db; -> {}", data);
