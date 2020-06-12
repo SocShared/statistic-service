@@ -8,7 +8,6 @@ import ml.socshared.bstatistics.domain.db.GroupTable;
 import ml.socshared.bstatistics.domain.db.Post;
 import ml.socshared.bstatistics.domain.storage.GroupPostStatus;
 import ml.socshared.bstatistics.domain.storage.SocialNetwork;
-import ml.socshared.bstatistics.domain.storage.request.PublicationRequest;
 import ml.socshared.bstatistics.domain.storage.response.GroupResponse;
 import ml.socshared.bstatistics.domain.storage.response.PublicationResponse;
 import ml.socshared.bstatistics.repository.GroupRepository;
@@ -18,13 +17,10 @@ import ml.socshared.bstatistics.service.StorageService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Pair;
-import org.springframework.http.converter.ObjectToStringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
