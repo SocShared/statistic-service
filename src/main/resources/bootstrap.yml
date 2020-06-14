@@ -4,6 +4,9 @@ spring:
   application:
     name: socshared-bstat-service
 
+service:
+  id: e7ee788d-c59e-4a96-bdaf-52d6b33df1f3
+
 jwt:
   secret: ${SECRET_JWT_KEY:mWDDrMHQ+QJcTnE+afpVz76HrKkGoKQZHnubc52bYN3/bECi32YNjVbR6EDs6BQsveUIh44ubwcktdPc7Sm9Tg==}
 
