@@ -23,9 +23,10 @@ public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
     List<PostInfo> findPostInfoByGroupIdAndPostId(UUID groupId, String postId, SocialNetwork soc);
 
     @Query(" Select info FROM PostInfo info " +
-            " WHERE (info.post.group.systemGroupId = :groupId and info.post.systemPostId = :postId and info.post.group.socialNetwork = :soc) and " +
+            " WHERE (info.post.group.systemUserId = :systemUserId) AND (info.post.group.systemGroupId = :groupId and info.post.systemPostId = :postId and info.post.group.socialNetwork = :soc) and " +
             " (info.dateAddedRecord >= :begin and info.dateAddedRecord <= :end) ")
-    List<PostInfo> findPostInfoByPeriod(UUID groupId,
+    List<PostInfo> findPostInfoByPeriod(UUID systemUserId,
+                                        UUID groupId,
                                         UUID postId,
                                         SocialNetwork soc,
                                         LocalDateTime begin,
@@ -34,7 +35,7 @@ public interface PostInfoRepository extends CrudRepository<PostInfo, Integer> {
     @Query("SELECT " +
             " new ml.socshared.bstatistics.domain.object.YoungestTimeRecord(MAX(pi.dateAddedRecord)) " +
             " FROM  PostInfo pi " +
-            " GROUP BY pi.post.socId, pi.post.group.systemGroupId, pi.post.group.socialNetwork " +
-            " HAVING pi.post.group.systemGroupId = :groupId and pi.post.socId = :postId and pi.post.group.socialNetwork = :soc")
-    Optional<YoungestTimeRecord> getTimeOfYoungestRecord(UUID groupId, UUID postId, SocialNetwork soc);
+            " GROUP BY pi.post.group.systemUserId, pi.post.systemPostId, pi.post.group.systemGroupId, pi.post.group.socialNetwork " +
+            " HAVING pi.post.group.systemUserId = :systemUserId and pi.post.group.systemGroupId = :groupId and pi.post.systemPostId = :postId and pi.post.group.socialNetwork = :soc")
+    Optional<YoungestTimeRecord> getTimeOfYoungestRecord(UUID systemUserId, UUID groupId, UUID postId, SocialNetwork soc);
 }

@@ -43,9 +43,9 @@ public class StatServiceImpl implements StatService {
 
 
     @Override
-    public GroupInfoResponse getGroupInfoByTime(UUID groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
+    public GroupInfoResponse getGroupInfoByTime(UUID systemUserId, UUID groupId, SocialNetwork soc, LocalDate begin, LocalDate end) {
         Util.checkDate(begin, end);
-        List<GroupInfo> giList = groupInfoRep.findBySocialIdBetweenDates(groupId, soc, LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MIDNIGHT));
+        List<GroupInfo> giList = groupInfoRep.findBySocialIdBetweenDates(systemUserId, groupId, soc, LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end.plusDays(1), LocalTime.MIDNIGHT));
         if (giList.isEmpty()) {
             throw new HttpNotFoundException("Not found information on group by set period");
         }
@@ -93,8 +93,8 @@ public class StatServiceImpl implements StatService {
 
 
     @Override
-    public PostInfoByTime getPostInfoByTime(UUID groupId, UUID postId, SocialNetwork soc, LocalDate begin, LocalDate end) {
-        List<PostInfo> res =  postInfoRep.findPostInfoByPeriod(groupId, postId, soc, LocalDateTime.of(begin, LocalTime.MIN),LocalDateTime.of(end,LocalTime.MIDNIGHT) );
+    public PostInfoByTime getPostInfoByTime(UUID systemUserId, UUID groupId, UUID postId, SocialNetwork soc, LocalDate begin, LocalDate end) {
+        List<PostInfo> res =  postInfoRep.findPostInfoByPeriod(systemUserId, groupId, postId, soc, LocalDateTime.of(begin, LocalTime.MIN),LocalDateTime.of(end.plusDays(1),LocalTime.MIDNIGHT) );
         PostInfoByTime response = new PostInfoByTime();
         if(res.isEmpty()) {
             throw new HttpNotFoundException("Not information of post (groupId: "
@@ -132,13 +132,13 @@ public class StatServiceImpl implements StatService {
      * @return сумарные показатели
      */
     @Override
-    public PostSummary getPostSummary(UUID groupId, UUID postId, SocialNetwork  soc) {
-        Optional<YoungestTimeRecord> record = postInfoRep.getTimeOfYoungestRecord(groupId, postId, soc);
+    public PostSummary getPostSummary(UUID systemUserId, UUID groupId, UUID postId, SocialNetwork  soc) {
+        Optional<YoungestTimeRecord> record = postInfoRep.getTimeOfYoungestRecord(systemUserId, groupId, postId, soc);
         if(record.isEmpty()) {
             throw new HttpNotFoundException("Not found information by post (GroupId: "
                     + groupId + "; PostId: " + postId + ")");
         }
-        List<PostInfo> postsList = postInfoRep.findPostInfoByPeriod(groupId, postId, soc,
+        List<PostInfo> postsList = postInfoRep.findPostInfoByPeriod(systemUserId, groupId, postId, soc,
                 record.get().getTime(), record.get().getTime());
         PostInfo post = postsList.get(0);
         PostSummary res = new PostSummary();

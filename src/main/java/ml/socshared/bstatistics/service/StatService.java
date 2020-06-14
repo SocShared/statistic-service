@@ -11,9 +11,9 @@ import java.util.UUID;
 
 
 public interface StatService {
-     GroupInfoResponse getGroupInfoByTime(UUID groupId, SocialNetwork soc, LocalDate begin, LocalDate end);
-    PostInfoByTime getPostInfoByTime(UUID groupId, UUID postId, SocialNetwork soc, LocalDate begin, LocalDate end);
-    PostSummary getPostSummary(UUID groupId, UUID postId, SocialNetwork soc);
+     GroupInfoResponse getGroupInfoByTime(UUID systemUserId, UUID groupId, SocialNetwork soc, LocalDate begin, LocalDate end);
+    PostInfoByTime getPostInfoByTime(UUID systemUserId, UUID groupId, UUID postId, SocialNetwork soc, LocalDate begin, LocalDate end);
+    PostSummary getPostSummary(UUID systemUserId, UUID groupId, UUID postId, SocialNetwork soc);
     void updateInformationOfPost(RabbitMqResponseAll data);
     void updateInformationOfGroup(RabbitMqResponseAll data);
 }

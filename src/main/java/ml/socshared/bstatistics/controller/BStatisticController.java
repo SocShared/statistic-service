@@ -1,5 +1,6 @@
 package ml.socshared.bstatistics.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.bstatistics.api.v1.BStatisticApi;
 import ml.socshared.bstatistics.domain.object.*;
@@ -20,29 +21,20 @@ import java.util.UUID;
 @RequestMapping("api/v1/")
 @Slf4j
 @PreAuthorize("isAuthenticated()")
+@RequiredArgsConstructor
 public class BStatisticController implements BStatisticApi {
 
-    private StatService service;
-    @Autowired
-    private PostInfoRepository rep;
-
-    @Autowired
-    BStatisticController(StatService s) {
-        service = s;
-    }
-
-
-
+    private final StatService service;
 
 
     @Override
     @PreAuthorize("hasRole('SERVICE')")
-    @GetMapping("private/social/{soc}/groups/{groupId}/subscribers/variability")
-    public TimeSeries<Integer> getVariabilitySubscribersOfGroup(@PathVariable UUID groupId,
+    @GetMapping("private/social/{soc}/groups/{systemGroupId}/subscribers/variability")
+    public TimeSeries<Integer> getVariabilitySubscribersOfGroup(@PathVariable UUID systemGroupId,
                                                                 @PathVariable SocialNetwork soc,
                                                                 @RequestParam Long begin,
                                                                 @RequestParam Long end) {
-        log.info("get time series of group (GroupID: " + groupId +") subscribers");
+        log.info("get time series of group (SocialNetwork: {}; GroupID: {}) subscribers", soc, systemGroupId);
         //return service.getVariabilitySubscribers(groupId, LocalDate.from(Instant.ofEpochSecond( begin)),
         // LocalDate.from(Instant.ofEpochSecond( end)));
         return null;
@@ -51,36 +43,38 @@ public class BStatisticController implements BStatisticApi {
 
     @Override
     @PreAuthorize("hasRole('SERVICE')")
-    @GetMapping("private/social/{soc}/groups/{systemGroupId}/posts/{sytemPostId}/time_series")
-    public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable UUID systemGroupId,
+    @GetMapping("private/users/{systemUserId}/social/{soc}/groups/{systemGroupId}/posts/{systemPostId}/time_series")
+    public PostInfoByTime getInfoVariabilityByTimeOfPost(@PathVariable UUID systemUserId,
+                                                         @PathVariable UUID systemGroupId,
                                                          @PathVariable UUID systemPostId,
                                                          @PathVariable SocialNetwork soc,
                                                          @RequestParam(name="begin") Long begin,
                                                          @RequestParam(name="end") Long end) {
         log.info("request on get info by time of post (Social: {}; GroupId: {}; PostId: {})", soc, systemGroupId, systemPostId);
-        return service.getPostInfoByTime(systemGroupId, systemPostId, soc,LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
+        return service.getPostInfoByTime(systemUserId,systemGroupId, systemPostId, soc,LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
                 LocalDate.ofInstant(Instant.ofEpochSecond( end), ZoneOffset.UTC));
     }
 
 
     @PreAuthorize("hasRole('SERVICE')")
-    @GetMapping("private/social/{soc}/groups/{groupId}/info")
-    public GroupInfoResponse getGroupInfo(@PathVariable UUID systemGroupId, @PathVariable SocialNetwork soc,
+    @GetMapping("private/users/{systemUserId}/social/{soc}/groups/{systemGroupId}/info")
+    public GroupInfoResponse getGroupInfo(@PathVariable UUID systemUserId,
+                                          @PathVariable UUID systemGroupId, @PathVariable SocialNetwork soc,
                                           @RequestParam(name = "begin") Long begin,
                                           @RequestParam(name = "end") Long end) {
         log.info("request to get group info");
-        return service.getGroupInfoByTime(systemGroupId, soc, Instant.ofEpochSecond(begin).atZone(ZoneOffset.UTC).toLocalDate(),
+       return service.getGroupInfoByTime(systemUserId, systemGroupId, soc, Instant.ofEpochSecond(begin).atZone(ZoneOffset.UTC).toLocalDate(),
                                           Instant.ofEpochSecond(end).atZone(ZoneOffset.UTC).toLocalDate());
-
     }
 
     @Override
     @PreAuthorize("hasRole('SERVICE')")
-    @GetMapping("private/social/{soc}/groups/{groupId}/posts/{postId}/summary")
-    public PostSummary getPostInfo(@PathVariable UUID systemGroupId, @PathVariable UUID systemPostId,
+    @GetMapping("private/users/{systemUserId}/social/{soc}/groups/{systemGroupId}/posts/{systemPostId}/summary")
+    public PostSummary getPostInfo(@PathVariable UUID systemUserId,
+                                   @PathVariable UUID systemGroupId, @PathVariable UUID systemPostId,
                                    @PathVariable SocialNetwork soc) {
         log.info("request on get info of post (SocialNetwork: {}; GroupId: {}; PostId: {})", soc, systemGroupId, systemPostId);
-        return service.getPostSummary(systemPostId, systemGroupId, soc);
+        return service.getPostSummary(systemUserId, systemGroupId, systemPostId, soc);
     }
 
     @Override

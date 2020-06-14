@@ -26,14 +26,14 @@ public interface BStatisticApi {
             @ApiResponse(code = 200, message = "Successfully retrieved Time Series"),
             @ApiResponse(code = 404, message = "Not found information by group or post")
     })
-    PostInfoByTime getInfoVariabilityByTimeOfPost(UUID groupId, UUID postId,SocialNetwork soc, Long begin, Long end);
+    PostInfoByTime getInfoVariabilityByTimeOfPost(UUID systemUserId,UUID groupId, UUID postId,SocialNetwork soc, Long begin, Long end);
 
     @ApiOperation(value = "Value Engagement rate by pos of group")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Seccessfully returned engagement rate"),
             @ApiResponse(code = 404, message = "Not found group or post by id")
             })
-    PostSummary getPostInfo(UUID groupId, UUID postId, SocialNetwork soc);
+    PostSummary getPostInfo(UUID systemUserId, UUID groupId, UUID postId, SocialNetwork soc);
 
     //Post - callback for Worker
     @ApiOperation(value = "Callback of Service Worker, on witch return statistic information of group or posts")

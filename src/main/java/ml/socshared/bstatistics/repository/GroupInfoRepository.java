@@ -17,10 +17,10 @@ import java.util.UUID;
 @Repository
 public interface GroupInfoRepository extends CrudRepository<GroupInfo, Integer>{
 
-    @Query("SELECT gi FROM GroupInfo gi WHERE (gi.group.systemGroupId = :groupId) AND  (gi.group.socialNetwork = :soc) AND " +
+    @Query("SELECT gi FROM GroupInfo gi WHERE (gi.group.systemUserId = :systemUserId) AND (gi.group.systemGroupId = :groupId) AND  (gi.group.socialNetwork = :soc) AND " +
             " (gi.timeAddedRecord >= :begin) AND (gi.timeAddedRecord <= :end) ")
-    List<GroupInfo> findBySocialIdBetweenDates(@Param("groupId") UUID groupId, SocialNetwork soc, @Param("begin") LocalDateTime begin,
-                                               @Param("end") LocalDateTime end);
+    List<GroupInfo> findBySocialIdBetweenDates(UUID systemUserId,UUID groupId, SocialNetwork soc, LocalDateTime begin,
+                                               LocalDateTime end);
 
     @Query("SELECT " +
                 " new ml.socshared.bstatistics.domain.object.YoungestTimeRecord(MAX(go.timeAddedRecord))" +

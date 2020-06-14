@@ -11,10 +11,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "group_table",
-        uniqueConstraints={
-            @UniqueConstraint(columnNames = {"social_id", "social_network"})
-})
+@Table(name = "group_table")
 public class GroupTable {
     @Id
     @Column(name = "system_group_id")
