@@ -1,7 +1,6 @@
 package ml.socshared.bstatistics.service;
 
 import ml.socshared.bstatistics.domain.db.PostInfo;
-import ml.socshared.bstatistics.domain.object.InformationOfGroup;
 import ml.socshared.bstatistics.domain.object.InformationOfPost;
 
 public interface DataService {

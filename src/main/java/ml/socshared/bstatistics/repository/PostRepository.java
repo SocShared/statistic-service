@@ -16,10 +16,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface PostRepository extends CrudRepository<Post, UUID> {
+public interface PostRepository extends CrudRepository<Post, Integer> {
 
     @Query("SELECT tp FROM Post tp  WHERE tp.dateAddingRecord >= :dateAddingAfter")
-    Page<Post> findRecordAddedAfter(@Param("dateAddingAfter") LocalDateTime dateAdding, Pageable pageable);
+    Page<Post> findRecordAddedAfter(LocalDateTime dateAddingAfter, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.group.socialId = :socGroupId AND p.group.socialNetwork = :soc " +
             " AND p.socId = :socPostId ")

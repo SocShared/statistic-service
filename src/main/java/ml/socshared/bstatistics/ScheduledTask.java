@@ -54,7 +54,7 @@ public class ScheduledTask {
     private final  SentrySender sentrySender;
     private final  RabbitTemplate rabbitTemplate;
 
-    private  final int delay =60000; //1728000;
+    private  final int delay =10000; //1728000;
     private  final int milli = 1000;
 
     LocalDateTime beforeDelayStart = LocalDateTime.now().minusMinutes(delay/milli);
@@ -71,8 +71,9 @@ public class ScheduledTask {
            Page<Post> postsPage = null;
            ObjectMapper mapper = new ObjectMapper();
            int i = 0;
+           int countGroups = 0;
            do {
-               postsPage = storageService.getPostNotOlderThat(beforeStart, PageRequest.of(i, pageDataSizeForOneStep));
+               postsPage = storageService.getPostNotOlderThat(LocalDateTime.now().minusDays(trackingNumDays), PageRequest.of(i, pageDataSizeForOneStep));
                Set<Pair<String, SocialNetwork>> groupIds = new HashSet<>();
                for (Post el : postsPage) {
                    RabbitMqSocialRequest request = new RabbitMqSocialRequest();
@@ -91,9 +92,12 @@ public class ScheduledTask {
                        rabbitTemplate.convertAndSend(RabbitMQConfig.BSTAT_REQUEST_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialized);
                    }
                }
+               countGroups += groupIds.size();
                i++;
            } while (i < postsPage.getTotalPages());
 
+           log.info("Request was sent for collection statistic on {} posts and {} groups", postsPage.getTotalElements(),
+                   countGroups);
 //           sentrySender.sentryMessage("Scheduled  task: Initialization of the collection of statistics from social networks",
 //                   Collections.emptyMap(), Collections.singletonList(SentryTag.ScheduledStatisticCollection));
 

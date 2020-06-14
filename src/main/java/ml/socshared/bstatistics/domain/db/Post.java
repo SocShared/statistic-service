@@ -16,6 +16,9 @@ import java.util.UUID;
 @Table(name = "post")
 public class Post {
     @Id
+    @GeneratedValue
+    Integer id;
+
     @Column(name = "system_post_id")
     UUID systemPostId;
     @ManyToOne(cascade = CascadeType.ALL)

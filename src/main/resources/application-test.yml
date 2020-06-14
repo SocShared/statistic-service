@@ -1,23 +1,31 @@
+#spring:
+  #datasource:
+   # url: jdbc:h2:mem:testDb;DB_CLOSE_DELAY=-1
+   # driver-class-name: org.h2.Driver
+    #username: sa
+server:
+  port: 8884
+
 spring:
   datasource:
-    url: jdbc:h2:mem:testDb;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-jpa:
-  hibernate:
-    dialect: org.hibernate.dialect.H2Dialect
-    hbm2ddl:
-      auto: create
-    rabbitmq:
-      host: ${RABBIT_HOST:localhost} # RabbitMQ host.
-      password: ${RABBIT_PASS:mqadmin} # Login to authenticate against the broker.
-      port: ${RABBIT_PORT:5672} # RabbitMQ port.
-      username: ${RABBIT_USER:mqadmin} # Login user to authenticate to the broker.
+    url:  jdbc:postgresql://${POSTGRES_HOST:localhost}/${POSTGRES_DB:springtest}
+    username: ${POSTGRES_USER:springuser}
+    password: ${POSTGRES_PASS:springpassword}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost} # RabbitMQ host.
+    password: ${RABBIT_PASS:mqadmin} # Login to authenticate against the broker.
+    port: ${RABBIT_PORT:5672} # RabbitMQ port.
+    username: ${RABBIT_USER:mqadmin} # Login user to authenticate to the broker.
 
 feign:
   url:
-    auth: ${AUTH_SERVICE:localhost:19999}
-    storage: ${STORAGE_SERVICE:localhost:8686}
+    auth: ${AUTH_SERVICE:https://auth.socshared.ml/}
+    storage: ${STORAGE_SERVICE:https://storage.socshared.ml/}
 
 
 service:
