@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -41,6 +42,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
+    @Transactional
     public void storageLoadPostNotOlderThat(LocalDateTime time) {
 
         Page<PublicationResponse> posts = null;
@@ -53,15 +55,14 @@ public class StorageServiceImpl implements StorageService {
                     Optional<GroupTable> groupOptional = groupRep.findById(status.getGroupId());
                     GroupTable group = null;
                     if(groupOptional.isEmpty()) {
-                        GroupResponse gresponse = storageClient.findGroupById(status.getGroupId(), authStorageToken());
                         group = new GroupTable();
                         group.setSystemUserId(p.getUserId());
-                        group.setSocialNetwork(gresponse.getSocialNetwork());
-                        group.setSystemGroupId(gresponse.getGroupId());
-                        if(gresponse.getSocialNetwork() == SocialNetwork.VK) {
-                            group.setSocialId(gresponse.getVkId());
+                        group.setSocialNetwork(status.getSocialNetwork());
+                        group.setSystemGroupId(status.getGroupId());
+                        if(status.getSocialNetwork() == SocialNetwork.VK) {
+                            group.setSocialId(status.getGroupVkId());
                         } else {
-                            group.setSocialId(gresponse.getFacebookId());
+                            group.setSocialId(status.getGroupFacebookId());
                         }
                         group = groupRep.save(group);
                     } else {
@@ -72,7 +73,7 @@ public class StorageServiceImpl implements StorageService {
                     if(group.getSocialNetwork() == SocialNetwork.VK) {
                         post.setSocId(status.getPostVkId());
                     } else {
-                        post.setSocId(status.getGroupFacebookId());
+                        post.setSocId(status.getPostFacebookId());
                     }
                     post.setSystemPostId(p.getPublicationId());
                     targetRep.save(post);
