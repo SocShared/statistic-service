@@ -54,7 +54,7 @@ public class ScheduledTask {
     private final  SentrySender sentrySender;
     private final  RabbitTemplate rabbitTemplate;
 
-    private  final int delay =10000; //1728000;
+    private  final int delay =1728000; //1728000;
     private  final int milli = 1000;
 
     LocalDateTime beforeDelayStart = LocalDateTime.now().minusMinutes(delay/milli);
