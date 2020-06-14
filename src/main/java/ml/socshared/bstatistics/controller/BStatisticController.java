@@ -9,13 +9,14 @@ import ml.socshared.bstatistics.domain.storage.SocialNetwork;
 import ml.socshared.bstatistics.repository.PostInfoRepository;
 import ml.socshared.bstatistics.service.StatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.*;
 
 @RestController
-@RequestMapping("api/v1/")
+@RequestMapping(value = "api/v1/", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @Slf4j
 @PreAuthorize("isAuthenticated()")
 public class BStatisticController implements BStatisticApi {

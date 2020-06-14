@@ -1,14 +1,13 @@
 package ml.socshared.bstatistics.handler;
 
-
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ml.socshared.bstatistics.exception.SocsharedErrors;
+import ml.socshared.bstatistics.config.CustomLocalDateTimeSerializer;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.context.request.ServletWebRequest;
 
@@ -28,16 +27,15 @@ public class RestApiError {
     private HttpStatus error;
     private String path;
     private String message;
+    @JsonSerialize(using = CustomLocalDateTimeSerializer.class)
     private LocalDateTime timestamp;
-    private SocsharedErrors errorCode;
 
-    public RestApiError(Throwable exc, HttpStatus status, ServletWebRequest webRequest, SocsharedErrors errorCode) {
+    public RestApiError(Throwable exc, HttpStatus status, ServletWebRequest webRequest) {
         this.status = status.value();
         this.error = status;
         this.message = exc.getMessage();
         this.timestamp = LocalDateTime.now();
         this.path = webRequest.getRequest().getRequestURI();
-        this.errorCode = errorCode;
     }
 }
 
