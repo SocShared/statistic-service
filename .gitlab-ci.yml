@@ -1,24 +1,17 @@
 image: java:11
 
 stages:
-  - build
-  - docker-build
+  - build-and-docker
   - docker-push
   - docker-deply-swarm
 
 before_script:
   - chmod +x gradlew
 
-build:
-  stage: build
-  script: ./gradlew clean build
-  artifacts:
-    paths:
-      - build/libs/service-business-statistic-1.0.0-SNAPSHOT.jar
-
-docker-build:
-  stage: docker-build
+build-and-docker:
+  stage: build-and-docker
   script:
+    - ./gradlew clean build
     - docker 2>/dev/null 1>&2 rmi `docker images -aq` || true
     - docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
 
