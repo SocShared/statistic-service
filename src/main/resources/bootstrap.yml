@@ -2,7 +2,7 @@ spring:
   profiles:
     active: ${SPRING_PROFILE:test}
   application:
-    name: socshared-bstat-service
+    name: bstat
 
 service:
   id: e7ee788d-c59e-4a96-bdaf-52d6b33df1f3
