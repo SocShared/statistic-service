@@ -71,7 +71,7 @@ public class ScheduledTask {
            Page<Post> postsPage = null;
            ObjectMapper mapper = new ObjectMapper();
            int i = 0;
-           int countGroups = 0;
+           Integer countGroups = 0;
            do {
                postsPage = storageService.getPostNotOlderThat(LocalDateTime.now().minusDays(trackingNumDays), PageRequest.of(i, pageDataSizeForOneStep));
                Set<Pair<String, SocialNetwork>> groupIds = new HashSet<>();
@@ -98,8 +98,13 @@ public class ScheduledTask {
 
            log.info("Request was sent for collection statistic on {} posts and {} groups", postsPage.getTotalElements(),
                    countGroups);
-//           sentrySender.sentryMessage("Scheduled  task: Initialization of the collection of statistics from social networks",
-//                   Collections.emptyMap(), Collections.singletonList(SentryTag.SCHEDULED_STATISTIC_COLLECTION));
+
+            Map<String, Object> sentryAdditional = new HashMap<>();
+            sentryAdditional.put("number_groups", countGroups);
+            sentryAdditional.put("number_posts", postsPage.getTotalElements());
+
+           sentrySender.sentryMessage("Scheduled  task: Initialization of the collection of statistics from social networks",
+                   sentryAdditional, Collections.singletonList(SentryTag.SCHEDULED_STATISTIC_COLLECTION));
 
        } catch (JsonProcessingException e) {
            log.error(e.getMessage());

@@ -82,8 +82,8 @@ public class StatServiceImpl implements StatService {
         Map<String, Object> additional = new HashMap<>();
         additional.put("system_group_id", groupId);
         additional.put("social_network", soc);
-        additional.put("time_begin", begin);
-        additional.put("time_end", end);
+        additional.put("date_begin", begin);
+        additional.put("date_end", end);
         sentrySender.sentryMessage("get time series of group", additional,
                 Collections.singletonList(SentryTag.GROUP_ONLINE));
 
@@ -121,6 +121,17 @@ public class StatServiceImpl implements StatService {
         response.setVariabilityNumberShares(new DataList<>(share.size(), share));
         response.setVariabilityNumberLikes(new DataList<>(likes.size(), likes));
         response.setVariabilityNumberComments(new DataList<>(comments.size(), comments));
+
+        Map<String, Object> additional = new HashMap<>();
+        additional.put("system_post_id", new SentryPostId(groupId, postId));
+        additional.put("social_network", soc);
+        additional.put("system_user_id", systemUserId);
+        additional.put("date_begin", begin);
+        additional.put("date_end", end);
+        sentrySender.sentryMessage("get post summary", additional,
+                Collections.singletonList(SentryTag.POST_INFO));
+
+
         return response;
     }
 
@@ -152,22 +163,14 @@ public class StatServiceImpl implements StatService {
                                              res.getNumberComments(), res.getNumberLikes()));
 
         Map<String, Object> additional = new HashMap<>();
-        additional.put("post_id", new SentryPostId(groupId, postId));
+        additional.put("system_post_id", new SentryPostId(groupId, postId));
+        additional.put("system_user_id", systemUserId);
         sentrySender.sentryMessage("get post summary", additional,
                 Collections.singletonList(SentryTag.POST_SUMMARY));
         return res;
     }
 
 
-    /**
-     * Запись текущих данных об посте в базу данных. Передается текущее состояние, в базу
-     * попадет как переданные данные так и разница текущего состояния с предыдущи. Принимаются только новые данные.
-     * Если передать объект с полем time, значение которого меньше самой свежой записи для конкретного поста
-     * то будет выкинуто исключение.
-     * @param data - текущее состояние поста
-     * @throws HttpIllegalBodyRequest если список содержит записи с одинаковым полем time для одного и тогоже поста
-     * @throws HttpIllegalBodyRequest если в базе данных содержится более свежая запись чем переданная. Определяется через поле time
-     */
     @Override
     @Transactional
     public void updateInformationOfPost(RabbitMqResponseAll data) {
@@ -203,11 +206,6 @@ public class StatServiceImpl implements StatService {
             newPostInfo.setDateAddedRecord(Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime());
             postInfoRep.save(newPostInfo);
 
-
-        Map<String, Object> additional = new HashMap<>();
-        additional.put("post_ids", new SentryPostId(data.getSystemGroupId(), data.getSystemPostId()));
-        sentrySender.sentryMessage("update information of posts", additional,
-                Collections.singletonList(SentryTag.POST_UPDATE));
     }
 
     @Override
