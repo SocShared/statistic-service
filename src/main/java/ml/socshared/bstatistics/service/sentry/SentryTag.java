@@ -1,12 +1,12 @@
 package ml.socshared.bstatistics.service.sentry;
 
 public enum SentryTag {
-    PostSummary("type", "post_summary"),
-    GroupUpdate("type", "group_update"),
-    PostUpdate("type", "post_update"),
-    PostInfo("type", "get_post_info"),
-    GroupOnline("type", "get_group_online"),
-    ScheduledStatisticCollection("type", "scheduled_statistic_collection");
+    POST_SUMMARY("type", "post_summary"),
+    GROUP_UPDATE("type", "group_update"),
+    POST_UPDATE("type", "post_update"),
+    POST_INFO("type", "get_post_info"),
+    GROUP_ONLINE("type", "get_group_online"),
+    SCHEDULED_STATISTIC_COLLECTION("type", "scheduled_statistic_collection");
 
     SentryTag(String t, String tag) {
         type = t;
@@ -20,8 +20,7 @@ public enum SentryTag {
         return sentryTag;
     }
 
-    private String sentryTag;
-    private String type;
-    public static final String service_name = "BST";
+    private final String sentryTag;
+    private final String type;
 
 }

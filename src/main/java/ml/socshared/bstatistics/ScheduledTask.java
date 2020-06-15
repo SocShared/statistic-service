@@ -99,7 +99,7 @@ public class ScheduledTask {
            log.info("Request was sent for collection statistic on {} posts and {} groups", postsPage.getTotalElements(),
                    countGroups);
 //           sentrySender.sentryMessage("Scheduled  task: Initialization of the collection of statistics from social networks",
-//                   Collections.emptyMap(), Collections.singletonList(SentryTag.ScheduledStatisticCollection));
+//                   Collections.emptyMap(), Collections.singletonList(SentryTag.SCHEDULED_STATISTIC_COLLECTION));
 
        } catch (JsonProcessingException e) {
            log.error(e.getMessage());

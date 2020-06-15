@@ -108,10 +108,10 @@
 //    @Test
 //    public void getPostInfoByTimeTestByOneDay() {
 //        Post post = new Post(new PostId("1", "1"), 100, 100, 100, 100);
-//        List<PostInfo> postInfo = Arrays.asList(
-//                new PostInfo(1, post, ZonedDateTime.now(), 1, 1, 1, 1),
-//                new PostInfo(1, post, ZonedDateTime.now(), 2, 2, 2, 2),
-//                new PostInfo(1, post, ZonedDateTime.now(), 3, 3, 3, 3)
+//        List<POST_INFO> postInfo = Arrays.asList(
+//                new POST_INFO(1, post, ZonedDateTime.now(), 1, 1, 1, 1),
+//                new POST_INFO(1, post, ZonedDateTime.now(), 2, 2, 2, 2),
+//                new POST_INFO(1, post, ZonedDateTime.now(), 3, 3, 3, 3)
 //        );
 //
 //        Mockito.when(postInfoRep.findPostInfoByPeriod(
@@ -143,16 +143,16 @@
 //    @Test
 //    public void getPostInfoByTimeTestByFewDay() {
 //        Post post = new Post(new PostId("1", "1"), 100, 100, 100, 100);
-//        List<PostInfo> postInfo = Arrays.asList(
-//                new PostInfo(1, post, ZonedDateTime.now().minusDays(2), 1, 2, 3, 4),
-//                new PostInfo(1, post, ZonedDateTime.now().minusDays(2), 2, 2, 2, 2),
-//                new PostInfo(1, post, ZonedDateTime.now().minusDays(2), 3, 3, 3, 3),
-//                new PostInfo(1, post, ZonedDateTime.now().minusDays(1), 1, 2, 3, 4),
-//                new PostInfo(1, post, ZonedDateTime.now().minusDays(1), 2, 2, 2, 2),
-//                new PostInfo(1, post, ZonedDateTime.now().minusDays(1), 3, 3, 3, 3),
-//                new PostInfo(1, post, ZonedDateTime.now(), 1, 2, 3, 4),
-//                new PostInfo(1, post, ZonedDateTime.now(), 2, 2, 2, 2),
-//                new PostInfo(1, post, ZonedDateTime.now(), 3, 3, 3, 3)
+//        List<POST_INFO> postInfo = Arrays.asList(
+//                new POST_INFO(1, post, ZonedDateTime.now().minusDays(2), 1, 2, 3, 4),
+//                new POST_INFO(1, post, ZonedDateTime.now().minusDays(2), 2, 2, 2, 2),
+//                new POST_INFO(1, post, ZonedDateTime.now().minusDays(2), 3, 3, 3, 3),
+//                new POST_INFO(1, post, ZonedDateTime.now().minusDays(1), 1, 2, 3, 4),
+//                new POST_INFO(1, post, ZonedDateTime.now().minusDays(1), 2, 2, 2, 2),
+//                new POST_INFO(1, post, ZonedDateTime.now().minusDays(1), 3, 3, 3, 3),
+//                new POST_INFO(1, post, ZonedDateTime.now(), 1, 2, 3, 4),
+//                new POST_INFO(1, post, ZonedDateTime.now(), 2, 2, 2, 2),
+//                new POST_INFO(1, post, ZonedDateTime.now(), 3, 3, 3, 3)
 //        );
 //
 //        Mockito.when(postInfoRep.findPostInfoByPeriod(
@@ -189,7 +189,7 @@
 ////                Mockito.anyString(), Mockito.anyString()
 ////        ))
 ////                .thenReturn(Collections.emptyList());
-////        ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
+////        ArgumentCaptor<POST_INFO> args = ArgumentCaptor.forClass(POST_INFO.class);
 ////
 ////        service = makeService();
 ////
@@ -204,7 +204,7 @@
 ////
 ////        service.updateInformationOfPost(Collections.singletonList(info));
 ////        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
-////        PostInfo result = args.getValue();
+////        POST_INFO result = args.getValue();
 ////        Assertions.assertEquals(info.getGroupId(), result.getPost().getId().getGroupId());
 ////        Assertions.assertEquals(info.getPostId(), result.getPost().getId().getPostId());
 ////        Assertions.assertEquals(info.getComments(), result.getComments());
@@ -222,8 +222,8 @@
 ////        final ZonedDateTime time1 = ZonedDateTime.now(ZoneOffset.UTC);
 ////        final ZonedDateTime time2 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(2);
 ////        final ZonedDateTime time3 = ZonedDateTime.now(ZoneOffset.UTC).plusHours(4);
-////        PostInfo info1 = new PostInfo();
-////        PostInfo info2 = new PostInfo();
+////        POST_INFO info1 = new POST_INFO();
+////        POST_INFO info2 = new POST_INFO();
 ////        info1.setPost(post);
 ////        info1.setViews(4);
 ////        info1.setComments(3);
@@ -243,7 +243,7 @@
 ////                Mockito.anyString(), Mockito.anyString()
 ////        ))
 ////                .thenReturn(Arrays.asList(info1, info2));
-////        ArgumentCaptor<PostInfo> args = ArgumentCaptor.forClass(PostInfo.class);
+////        ArgumentCaptor<POST_INFO> args = ArgumentCaptor.forClass(POST_INFO.class);
 ////
 ////        Mockito.when(postRep.findById(
 ////                Mockito.any()
@@ -262,7 +262,7 @@
 ////        service.updateInformationOfPost(Collections.singletonList(postInfo));
 ////
 ////        Mockito.verify(postInfoRep, Mockito.times(1)).save(args.capture());
-////        PostInfo result = args.getValue();
+////        POST_INFO result = args.getValue();
 ////        Assertions.assertEquals(4, result.getLikes());
 ////        Assertions.assertEquals(3, result.getShare());
 ////        Assertions.assertEquals(3, result.getComments());
@@ -281,7 +281,7 @@
 //
 //        service = makeService();
 //
-//        PostSummary res = service.getPostSummary("1", "2");
+//        POST_SUMMARY res = service.getPostSummary("1", "2");
 //
 //        Assertions.assertEquals( "1", res.getGroupId());
 //        Assertions.assertEquals( "2", res.getPostId());

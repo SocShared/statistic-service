@@ -18,7 +18,7 @@ import ml.socshared.bstatistics.domain.db.Post;
 //    @BeforeEach
 //    public void StartUp() {
 //
-//        PostInfo info = new PostInfo();
+//        POST_INFO info = new POST_INFO();
 //        Post post = new Post(new PostId(groupId1, postId), 1, 1, 1, 1);
 //        post =  postRep.save(post);
 //        info.setDateAddedRecord(ZonedDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC));
@@ -28,7 +28,7 @@ import ml.socshared.bstatistics.domain.db.Post;
 //        info.setShare(3);
 //        info.setLikes(4);
 //        infoRep.save(info);
-//        info = new PostInfo();
+//        info = new POST_INFO();
 //       info.setPost(post);
 //        info.setDateAddedRecord(ZonedDateTime.of(2020, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC));
 //        info.setViews(5);
@@ -36,7 +36,7 @@ import ml.socshared.bstatistics.domain.db.Post;
 //        info.setShare(7);
 //        info.setLikes(8);
 //        infoRep.save(info);
-//        info = new PostInfo();
+//        info = new POST_INFO();
 //        post = new Post(new PostId(groupId2, postId), 2, 2, 2, 2);
 //        post = postRep.save(post);
 //        info.setPost(post);
@@ -52,9 +52,9 @@ import ml.socshared.bstatistics.domain.db.Post;
 //
 //    @Test
 //    public void findPostInfoByPeriod() {
-//        List<PostInfo> res = infoRep.findPostInfoByPeriod(groupId1, postId, ZonedDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+//        List<POST_INFO> res = infoRep.findPostInfoByPeriod(groupId1, postId, ZonedDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
 //                ZonedDateTime.of(2020, 1, 5, 0, 0, 0, 0, ZoneOffset.UTC));
-////        List<PostInfo> res = repository.findPostInfoByPeriod2(groupId1);
+////        List<POST_INFO> res = repository.findPostInfoByPeriod2(groupId1);
 //        Assertions.assertEquals(2, res.size());
 //    }
 //}

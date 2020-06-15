@@ -27,12 +27,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 //    @BeforeEach
 //    void loadData() throws Exception {
 //        Post post = new Post(new PostId(groupId, postId), 800, 8, 8, 600);
-//        PostInfo info1 = new PostInfo(1, post, ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).minusMinutes(30), 50, 0, 0, 0);
-//        PostInfo info2 = new PostInfo(2, post, ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).minusMinutes(20), 200, 2, 150, 2);
-//        PostInfo info3 = new PostInfo(3, post, ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).minusMinutes(10), 150, 2, 150, 2);
-//        PostInfo info4 = new PostInfo(1, post, ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(30), 50, 0, 0, 0);
-//        PostInfo info5 = new PostInfo(2, post, ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(20), 200, 2, 150, 2);
-//        PostInfo info6 = new PostInfo(3, post, ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(10), 150, 2, 150, 2);
+//        POST_INFO info1 = new POST_INFO(1, post, ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).minusMinutes(30), 50, 0, 0, 0);
+//        POST_INFO info2 = new POST_INFO(2, post, ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).minusMinutes(20), 200, 2, 150, 2);
+//        POST_INFO info3 = new POST_INFO(3, post, ZonedDateTime.now(ZoneOffset.UTC).minusDays(1).minusMinutes(10), 150, 2, 150, 2);
+//        POST_INFO info4 = new POST_INFO(1, post, ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(30), 50, 0, 0, 0);
+//        POST_INFO info5 = new POST_INFO(2, post, ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(20), 200, 2, 150, 2);
+//        POST_INFO info6 = new POST_INFO(3, post, ZonedDateTime.now(ZoneOffset.UTC).minusMinutes(10), 150, 2, 150, 2);
 //
 //        postRep.save(info1);
 //        postRep.save(info2);

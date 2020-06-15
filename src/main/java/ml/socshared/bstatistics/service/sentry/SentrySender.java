@@ -16,7 +16,6 @@ public class SentrySender {
 
     public void sentryMessage(String message, Map<String, Object> additionalData, List<SentryTag> tags) {
         Map<String, String> tm = new HashMap<>();
-        tm.put("service", SentryTag.service_name);
         for(SentryTag tag : tags) {
             tm.put(tag.type(), tag.value());
         }

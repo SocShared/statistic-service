@@ -85,7 +85,7 @@ public class StatServiceImpl implements StatService {
         additional.put("time_begin", begin);
         additional.put("time_end", end);
         sentrySender.sentryMessage("get time series of group", additional,
-                Collections.singletonList(SentryTag.GroupOnline));
+                Collections.singletonList(SentryTag.GROUP_ONLINE));
 
         return response;
     }
@@ -154,7 +154,7 @@ public class StatServiceImpl implements StatService {
         Map<String, Object> additional = new HashMap<>();
         additional.put("post_id", new SentryPostId(groupId, postId));
         sentrySender.sentryMessage("get post summary", additional,
-                Collections.singletonList(SentryTag.PostSummary));
+                Collections.singletonList(SentryTag.POST_SUMMARY));
         return res;
     }
 
@@ -207,7 +207,7 @@ public class StatServiceImpl implements StatService {
         Map<String, Object> additional = new HashMap<>();
         additional.put("post_ids", new SentryPostId(data.getSystemGroupId(), data.getSystemPostId()));
         sentrySender.sentryMessage("update information of posts", additional,
-                Collections.singletonList(SentryTag.PostUpdate));
+                Collections.singletonList(SentryTag.POST_UPDATE));
     }
 
     @Override
