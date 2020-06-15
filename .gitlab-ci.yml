@@ -23,6 +23,12 @@ docker-build:
     - docker 2>/dev/null 1>&2 rmi `docker images -aq` || true
     - docker build -t $CI_DOCKER_LOGIN/service-business-statistic .
 
+docker-push:
+  stage: docker-push
+  script:
+    - docker login -u "$CI_DOCKER_LOGIN" -p "$CI_DOCKER_PASSWORD"
+    - docker push $CI_DOCKER_LOGIN/service-business-statistic
+
 docker-deply-swarm:
   stage: docker-deply-swarm
   script:
