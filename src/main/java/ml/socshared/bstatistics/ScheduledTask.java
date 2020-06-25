@@ -118,13 +118,13 @@ public class ScheduledTask {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
             RabbitMqResponseAll response = mapper.readValue(message, RabbitMqResponseAll.class);
-
             if(response.getType().equals(RabbitMqType.POST)) {
+                log.info("new post stat: Soc: {}, GroupId: {}; PostId: {} ", response.getSocialNetwork(), response.getGroupId(), response.getPostId());
                 service.updateInformationOfPost(response);
-            } else if(response.getType().equals(RabbitMqType.GROUP)){
+            } else {
+                log.info("new group stat: Soc: {}, GroupId: {}", response.getSocialNetwork(), response.getGroupId());
                 service.updateInformationOfGroup(response);
             }
-            log.info("{}", response);
         } catch(Exception exp) {
             log.error("Error receive result of collection statistic: {}", exp.getMessage());
         }
