@@ -26,7 +26,7 @@ public class Post {
     @Column(name = "post_id")
     String socId;
     @OneToMany(mappedBy = "post")
-    Set<PostInfo> info;
+    List<PostInfo> info;
     @Column(name="date_adding_record", nullable = false)
     LocalDateTime dateAddingRecord = LocalDateTime.now();
 }

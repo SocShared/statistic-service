@@ -23,7 +23,7 @@ public class GroupTable {
     @Column(name="social_network")
     SocialNetwork socialNetwork;
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
-    Set<GroupInfo> info;
+    List<GroupInfo> info;
     @OneToMany(mappedBy = "group")
     Set<Post> posts;
 }

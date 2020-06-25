@@ -206,7 +206,7 @@ public class StatServiceImpl implements StatService {
             newPostInfo.setLikes(data.getLikesCount());
             newPostInfo.setDateAddedRecord(Instant.ofEpochMilli(data.getDateTime()).atZone(ZoneOffset.UTC).toLocalDateTime());
             newPostInfo = postInfoRep.save(newPostInfo);
-            log.info("save post stat -> {}", newPostInfo);
+            log.info("save post stat: recordId: {}", newPostInfo.getId());
 
     }
 
@@ -237,7 +237,7 @@ public class StatServiceImpl implements StatService {
 
        info =  groupInfoRep.save(info);
 
-       log.info("save group stat -> {}", info);
+       log.info("save group stat; RecordId: {}", info.getId());
     }
 
 
