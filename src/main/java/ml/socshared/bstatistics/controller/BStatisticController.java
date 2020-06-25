@@ -51,7 +51,7 @@ public class BStatisticController implements BStatisticApi {
                                                          @PathVariable SocialNetwork soc,
                                                          @RequestParam(name="begin") Long begin,
                                                          @RequestParam(name="end") Long end) {
-        log.info("request on get info by time of post (Social: {}; GroupId: {}; PostId: {})", soc, systemGroupId, systemPostId);
+        log.info("request on get info by time of post (Social: {}; GroupId: {}; PostId: {}) for user {}", soc, systemGroupId, systemPostId, systemUserId);
         return service.getPostInfoByTime(systemUserId,systemGroupId, systemPostId, soc,LocalDate.ofInstant(Instant.ofEpochSecond( begin), ZoneOffset.UTC),
                 LocalDate.ofInstant(Instant.ofEpochSecond( end), ZoneOffset.UTC));
     }
@@ -63,7 +63,7 @@ public class BStatisticController implements BStatisticApi {
                                           @PathVariable UUID systemGroupId, @PathVariable SocialNetwork soc,
                                           @RequestParam(name = "begin") Long begin,
                                           @RequestParam(name = "end") Long end) {
-        log.info("request to get group info");
+        log.info("request to get group info {}; for user {}", systemGroupId, systemUserId);
        return service.getGroupInfoByTime(systemUserId, systemGroupId, soc, Instant.ofEpochSecond(begin).atZone(ZoneOffset.UTC).toLocalDate(),
                                           Instant.ofEpochSecond(end).atZone(ZoneOffset.UTC).toLocalDate());
     }

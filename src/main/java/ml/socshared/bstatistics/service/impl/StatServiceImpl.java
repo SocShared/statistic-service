@@ -47,7 +47,8 @@ public class StatServiceImpl implements StatService {
         Util.checkDate(begin, end);
         List<GroupInfo> giList = groupInfoRep.findBySocialIdBetweenDates(systemUserId, groupId, soc, LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end.plusDays(1), LocalTime.MIDNIGHT));
         if (giList.isEmpty()) {
-            throw new HttpNotFoundException("Not found information on group by set period");
+            String msg = String.format("Not found information on group by set period: {} - {}", begin, end);
+            throw new HttpNotFoundException(msg);
         }
 
         List<TimePoint<Integer>> gonline = new LinkedList<>();
@@ -191,7 +192,7 @@ public class StatServiceImpl implements StatService {
 
             PostInfo newPostInfo = new PostInfo();
             Optional<Post> postOptional = postRep.findBySocial(data.getGroupId(), data.getPostId(),
-                                                               data.getSocialNetwork());
+                                                               data.getSocialNetwork(), data.getSystemUserId());
             if(postOptional.isEmpty()) {
                 log.error("Internal Server Error. Post by social (groupId: {}, postId: {}, soc: {}) not found in db",
                         data.getGroupId(), data.getPostId(), data.getSocialNetwork());
@@ -221,7 +222,8 @@ public class StatServiceImpl implements StatService {
         }
 
         GroupInfo info = new GroupInfo();
-        Optional<GroupTable> groupOptional = groupRep.findBySocial(data.getGroupId(), data.getSocialNetwork());
+        Optional<GroupTable> groupOptional = groupRep.findBySocial(data.getGroupId(), data.getSocialNetwork(),
+                                                                   data.getSystemUserId());
         if(groupOptional.isEmpty()) {
             log.error("Internal server error, for group not found systemId; -> {}", data);
             return;

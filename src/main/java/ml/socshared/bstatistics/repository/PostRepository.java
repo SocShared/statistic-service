@@ -22,7 +22,7 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
     Page<Post> findRecordAddedAfter(LocalDateTime dateAddingAfter, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.group.socialId = :socGroupId AND p.group.socialNetwork = :soc " +
-            " AND p.socId = :socPostId ")
-    Optional<Post> findBySocial(String socGroupId, String socPostId, SocialNetwork soc);
+            " AND p.socId = :socPostId AND p.group.systemUserId = :systemUserId")
+    Optional<Post> findBySocial(String socGroupId, String socPostId, SocialNetwork soc, UUID systemUserId);
 
 }

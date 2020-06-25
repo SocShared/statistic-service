@@ -12,6 +12,7 @@ import java.util.UUID;
 @Repository
 public interface GroupRepository extends CrudRepository<GroupTable, UUID> {
 
-    @Query("SELECT g FROM GroupTable g WHERE g.socialId = :socGroupId AND g.socialNetwork = :soc")
-    Optional<GroupTable> findBySocial(String socGroupId, SocialNetwork soc);
+    @Query("SELECT g FROM GroupTable g WHERE g.socialId = :socGroupId AND g.socialNetwork = :soc " +
+            " AND g.systemUserId = :systemUserId ")
+    Optional<GroupTable> findBySocial(String socGroupId, SocialNetwork soc, UUID systemUserId);
 }
