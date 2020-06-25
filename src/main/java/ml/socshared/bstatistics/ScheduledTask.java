@@ -124,7 +124,7 @@ public class ScheduledTask {
             } else if(response.getType().equals(RabbitMqType.GROUP)){
                 service.updateInformationOfGroup(response);
             }
-            log.info("{}", message.toString());
+            log.info("{}", response);
         } catch(Exception exp) {
             log.error("Error receive result of collection statistic: {}", exp.getMessage());
         }
